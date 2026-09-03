@@ -2,97 +2,141 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MAKEROBOT PRO Controller</title>
     <style>
+        /* BASE STYLES */
         body {
             margin: 0;
             padding: 0;
-            background-color: #1e1e1e;
+            background-color: #121212;
             color: white;
-            font-family: Arial, sans-serif;
-            touch-action: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none; /* Prevents swiping and scrolling */
             user-select: none;
             overflow: hidden;
             display: flex;
             height: 100vh;
             width: 100vw;
-            position: relative;
         }
 
-        /* WATERMARK LOGO */
-        .center-logo {
+        /* PORTRAIT WARNING OVERLAY */
+        #portrait-warning {
+            display: none;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 35vw; 
-            pointer-events: none; 
-            z-index: -1; 
-            display: flex;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e74c3c;
+            color: white;
+            z-index: 9999;
             justify-content: center;
             align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            flex-direction: column;
+            padding: 20px;
         }
-        
-        .center-logo img {
-            max-width: 100%;
-            height: auto;
-            opacity: 0.15; 
+        @media screen and (orientation: portrait) {
+            #portrait-warning { display: flex; }
+            .app-container { display: none !important; }
         }
 
-        .controller-half {
+        /* 3-COLUMN LAYOUT */
+        .app-container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            box-sizing: border-box;
+        }
+
+        .side-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-around;
+            justify-content: space-evenly;
             align-items: center;
-            padding: 20px;
+            height: 100%;
         }
 
-        /* Top Bar UI */
-        #top-bar {
-            position: absolute;
-            top: 10px;
-            left: 0;
-            width: 100%;
+        .center-panel {
+            flex: 1.2;
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
-            box-sizing: border-box;
-            pointer-events: none;
+            height: 95%;
+            background-color: #1e1e1e;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: inset 0px 0px 15px rgba(0,0,0,0.5);
+            border: 2px solid #333;
         }
 
-        #readout {
-            color: #2ecc71;
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
+        /* CENTER PANEL UI */
         #btn-connect {
-            pointer-events: auto;
+            width: 100%;
             background-color: #e67e22;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px;
             font-size: 16px;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0px 4px 0px #d35400;
+            text-transform: uppercase;
         }
-
         #btn-connect:active {
             transform: translateY(4px);
             box-shadow: 0px 0px 0px #d35400;
         }
 
-        /* Button Clusters */
+        .main-logo {
+            max-width: 80%;
+            max-height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
+            pointer-events: none;
+        }
+
+        .telemetry-box {
+            width: 100%;
+            background-color: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .telemetry-label {
+            color: #888;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #readout, #status-text {
+            color: #2ecc71;
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        #status-text { color: #e74c3c; font-size: 14px; } /* Defaults to red/disconnected */
+
+        /* BUTTON CLUSTERS */
         .button-cluster {
             display: grid;
-            grid-template-columns: 60px 60px 60px;
-            grid-template-rows: 60px 60px 60px;
+            grid-template-columns: 50px 50px 50px;
+            grid-template-rows: 50px 50px 50px;
             gap: 5px;
         }
 
@@ -102,13 +146,12 @@
             border: 2px solid #2c3e50;
             color: white;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
             box-shadow: 0px 4px 0px #1c2833;
         }
-        
         .btn:active, .btn.active {
             background-color: #2980b9;
             box-shadow: 0px 0px 0px #1c2833;
@@ -120,67 +163,82 @@
         .btn-right { grid-column: 3; grid-row: 2; }
         .btn-bottom { grid-column: 2; grid-row: 3; }
 
-        /* Joysticks */
+        /* JOYSTICKS */
         .joystick-base {
-            width: 150px;
-            height: 150px;
-            background-color: #333;
+            width: 130px;
+            height: 130px;
+            background-color: #2a2a2a;
             border-radius: 50%;
             position: relative;
-            border: 2px solid #555;
+            border: 3px solid #444;
+            box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
         }
         
         .joystick-stick {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             background-color: #e74c3c;
             border-radius: 50%;
             position: absolute;
-            top: 45px;
-            left: 45px;
-            box-shadow: inset 0px 0px 10px rgba(0,0,0,0.5);
+            top: 40px; /* (130 - 50) / 2 */
+            left: 40px;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4), 0px 5px 10px rgba(0,0,0,0.5);
             pointer-events: none;
-            transition: transform 0.1s;
+            transition: transform 0.05s linear;
         }
     </style>
 </head>
 <body>
 
-    <!-- Top UI Bar -->
-    <div id="top-bar">
-        <div id="readout">SYSTEM READY</div>
-        <button id="btn-connect">CONNECT BLUETOOTH</button>
+    <!-- OVERLAY FOR WRONG PHONE ORIENTATION -->
+    <div id="portrait-warning">
+        <div>🔄</div>
+        <div>Please rotate your phone to Landscape mode</div>
     </div>
 
-    <!-- WATERMARK CENTER LOGO -->
-    <div class="center-logo">
-        <img src="icon.png" alt="">
-    </div>
+    <!-- MAIN APP INTERFACE -->
+    <div class="app-container">
+        
+        <!-- LEFT SIDE: D-Pad & Left Stick -->
+        <div class="side-panel">
+            <div class="button-cluster">
+                <div class="btn btn-top" id="btn-up">UP</div>
+                <div class="btn btn-left" id="btn-left">LT</div>
+                <div class="btn btn-right" id="btn-right">RT</div>
+                <div class="btn btn-bottom" id="btn-down">DN</div>
+            </div>
+            <div class="joystick-base" id="joy-left">
+                <div class="joystick-stick" id="stick-left"></div>
+            </div>
+        </div>
 
-    <!-- LEFT SIDE: D-Pad & Left Stick -->
-    <div class="controller-half">
-        <div class="button-cluster">
-            <div class="btn btn-top" id="btn-up">UP</div>
-            <div class="btn btn-left" id="btn-left">LT</div>
-            <div class="btn btn-right" id="btn-right">RT</div>
-            <div class="btn btn-bottom" id="btn-down">DN</div>
+        <!-- CENTER SIDE: Logo, Connect, Telemetry -->
+        <div class="center-panel">
+            <button id="btn-connect">Connect BLITZ</button>
+            
+            <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo">
+            
+            <div class="telemetry-box">
+                <div class="telemetry-label">Bluetooth Status</div>
+                <div id="status-text">OFFLINE</div>
+                <div class="telemetry-label" style="margin-top: 5px;">Data Transmit</div>
+                <div id="readout">M_N</div>
+            </div>
         </div>
-        <div class="joystick-base" id="joy-left">
-            <div class="joystick-stick" id="stick-left"></div>
-        </div>
-    </div>
 
-    <!-- RIGHT SIDE: ABXY & Right Stick -->
-    <div class="controller-half">
-        <div class="button-cluster">
-            <div class="btn btn-top" id="btn-y">Y</div>
-            <div class="btn btn-left" id="btn-x">X</div>
-            <div class="btn btn-right" id="btn-b">B</div>
-            <div class="btn btn-bottom" id="btn-a">A</div>
+        <!-- RIGHT SIDE: ABXY & Right Stick -->
+        <div class="side-panel">
+            <div class="button-cluster">
+                <div class="btn btn-top" id="btn-y">Y</div>
+                <div class="btn btn-left" id="btn-x">X</div>
+                <div class="btn btn-right" id="btn-b">B</div>
+                <div class="btn btn-bottom" id="btn-a">A</div>
+            </div>
+            <div class="joystick-base" id="joy-right">
+                <div class="joystick-stick" id="stick-right"></div>
+            </div>
         </div>
-        <div class="joystick-base" id="joy-right">
-            <div class="joystick-stick" id="stick-right"></div>
-        </div>
+        
     </div>
 
     <script>
@@ -190,19 +248,19 @@
         let bleDevice;
         let bleServer;
         let uartService;
-        let rxCharacteristic; // Renamed to RX (Receive) for clarity
+        let rxCharacteristic; 
 
-        // Nordic UART Service UUIDs
         const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-        // The micro:bit's RX characteristic (Phone writes TO this) ends in 0003!
         const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
         const connectBtn = document.getElementById('btn-connect');
         const readout = document.getElementById('readout');
+        const statusText = document.getElementById('status-text');
 
         connectBtn.addEventListener('click', async () => {
             try {
-                readout.innerText = "SCANNING...";
+                statusText.innerText = "SCANNING...";
+                statusText.style.color = "#f39c12"; // Orange
                 
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'BBC micro:bit' }],
@@ -211,45 +269,42 @@
 
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
 
-                readout.innerText = "CONNECTING...";
+                statusText.innerText = "CONNECTING...";
                 bleServer = await bleDevice.gatt.connect();
                 uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
-                
-                // Get the correct WRITE characteristic (0003)
                 rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
 
-                readout.innerText = "CONNECTED!";
-                connectBtn.innerText = "CONNECTED";
-                connectBtn.style.backgroundColor = "#2ecc71";
-                connectBtn.style.boxShadow = "0px 4px 0px #27ae60";
+                statusText.innerText = "CONNECTED";
+                statusText.style.color = "#2ecc71"; // Green
+                connectBtn.innerText = "DISCONNECT";
+                connectBtn.style.backgroundColor = "#27ae60";
+                connectBtn.style.boxShadow = "0px 4px 0px #1e8449";
 
             } catch (error) {
                 console.error('Bluetooth Error:', error);
-                readout.innerText = "CONNECTION FAILED";
+                statusText.innerText = "FAILED";
+                statusText.style.color = "#e74c3c";
             }
         });
 
         function onDisconnected() {
-            readout.innerText = "DISCONNECTED";
-            connectBtn.innerText = "CONNECT BLUETOOTH";
-            connectBtn.style.backgroundColor = "#e74c3c";
-            connectBtn.style.boxShadow = "0px 4px 0px #c0392b";
+            statusText.innerText = "OFFLINE";
+            statusText.style.color = "#e74c3c"; // Red
+            connectBtn.innerText = "Connect BLITZ";
+            connectBtn.style.backgroundColor = "#e67e22";
+            connectBtn.style.boxShadow = "0px 4px 0px #d35400";
             rxCharacteristic = null;
         }
 
-        // UPGRADED SEND FUNCTION (Using "#" Delimiter & correct RX characteristic)
         async function sendCommand(cmd) {
-            console.log("SENDING:", cmd);
-            readout.innerText = "CMD: " + cmd;
+            readout.innerText = cmd;
 
             if (!rxCharacteristic) return; 
 
             try {
-                // Add the hashtag (#) so MakeCode knows the message is finished!
                 let encoder = new TextEncoder();
                 let data = encoder.encode(cmd + "#");
                 
-                // Write without response prevents the browser from queue-locking
                 if (rxCharacteristic.properties.writeWithoutResponse) {
                     await rxCharacteristic.writeValueWithoutResponse(data);
                 } else {
@@ -257,7 +312,6 @@
                 }
             } catch (error) {
                 console.error('Send Error:', error);
-                readout.innerText = "SEND ERROR";
             }
         }
 
@@ -316,8 +370,10 @@
         function setupJoystick(baseId, stickId, side) {
             const base = document.getElementById(baseId);
             const stick = document.getElementById(stickId);
-            const maxRadius = 45; 
-            const deadzone = 15;  
+            
+            // Updated math for the new 130px joystick base
+            const maxRadius = 40; 
+            const deadzone = 12;  
 
             let activeTouchId = null;
 
