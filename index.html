@@ -443,7 +443,7 @@
                 <div class="telemetry-label" style="margin-top: 2px;">Sent Cmd</div>
                 <div id="readout">M_N</div>
                 <div class="telemetry-label" style="margin-top: 2px;" id="rx-label">BLITZ DATA</div>
-                <!-- UPDATED: 2 Line Output area -->
+                <!-- 2 Line Output area -->
                 <div id="telemetry-rx">WAITING...<br>&nbsp;</div>
             </div>
         </div>
@@ -599,18 +599,20 @@
         const readout = document.getElementById('readout');
         const statusText = document.getElementById('status-text');
         
-        // 2-LINE TELEMETRY VARIABLES
+        // ==========================================
+        // FIXED 2-LINE TELEMETRY DATA STRUCTURE
+        // ==========================================
         const telemetryRx = document.getElementById('telemetry-rx');
-        let telemetryHistory = [];
+        let telemetryData = {}; // Stores key-value pairs (e.g. { "BAT": "BAT: 99%" })
+        let telemetryOrder = []; // Keeps track of insertion order, max 2 elements
 
-        // Function to render exactly 2 lines of telemetry max
         function renderTelemetry() {
-            if (telemetryHistory.length === 0) {
+            if (telemetryOrder.length === 0) {
                 telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
-            } else if (telemetryHistory.length === 1) {
-                telemetryRx.innerHTML = telemetryHistory[0] + "<br>&nbsp;";
-            } else if (telemetryHistory.length === 2) {
-                telemetryRx.innerHTML = telemetryHistory[0] + "<br>" + telemetryHistory[1];
+            } else if (telemetryOrder.length === 1) {
+                telemetryRx.innerHTML = telemetryData[telemetryOrder[0]] + "<br>&nbsp;";
+            } else {
+                telemetryRx.innerHTML = telemetryData[telemetryOrder[0]] + "<br>" + telemetryData[telemetryOrder[1]];
             }
         }
 
@@ -659,12 +661,29 @@
             let receivedString = decoder.decode(value).trim();
             receivedString = receivedString.replace("#", "");
             
-            // Push to history and keep max 2 elements
-            telemetryHistory.push(receivedString);
-            if (telemetryHistory.length > 2) {
-                telemetryHistory.shift(); 
+            // SMART LABEL EXTRACTION 
+            // Extracts string before first ':' or '='. If none exist, takes the first word.
+            let label = receivedString;
+            let match = receivedString.match(/^([^:=]+)[:=]/);
+            if (match) {
+                label = match[1].trim();
+            } else {
+                label = receivedString.split(' ')[0].trim(); 
             }
             
+            // Manage the 2-line fixed display logic
+            if (!telemetryOrder.includes(label)) {
+                telemetryOrder.push(label);
+                
+                // If we exceed 2 lines, remove the oldest one
+                if (telemetryOrder.length > 2) {
+                    let oldLabel = telemetryOrder.shift();
+                    delete telemetryData[oldLabel];
+                }
+            }
+            
+            // Update the string payload for this specific label
+            telemetryData[label] = receivedString;
             renderTelemetry();
         }
 
@@ -672,9 +691,10 @@
             statusText.innerText = "OFFLINE";
             statusText.style.color = "#e74c3c"; 
             
-            // Reset Telemetry display
+            // Reset Telemetry display & Memory
             telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
-            telemetryHistory = [];
+            telemetryData = {};
+            telemetryOrder = [];
             
             connectBtn.innerText = `Connect ${currentRobot}`;
             
