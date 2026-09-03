@@ -71,13 +71,15 @@
             justify-content: space-evenly;
             align-items: center;
             height: 100%;
+            /* Keep width stable even when children are hidden */
+            min-width: 160px; 
         }
 
         .center-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-evenly;
+            justify-content: space-between;
             align-items: center;
             height: 95%;
             background-color: #181818;
@@ -88,14 +90,43 @@
             max-width: 300px;
         }
 
+        /* ROBOT SELECTOR TOGGLE */
+        .robot-selector {
+            display: flex;
+            background: #050505;
+            border-radius: 20px;
+            padding: 4px;
+            border: 1px solid #222;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+        }
+        .mode-btn {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .mode-btn.active {
+            background: linear-gradient(145deg, #3a3a3a, #222);
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+        }
+
         /* CENTER PANEL UI */
         #btn-connect {
             width: 100%;
             background: linear-gradient(145deg, #333, #222);
             color: #ddd;
             border: 1px solid #444;
-            padding: 12px;
-            font-size: 15px;
+            padding: 10px;
+            font-size: 14px;
             font-weight: bold;
             border-radius: 25px;
             cursor: pointer;
@@ -112,25 +143,17 @@
 
         /* XBOX-STYLE HOME BUTTON (LOGO) */
         .main-logo {
-            width: 105px;  /* Slightly larger */
-            height: 105px;
-            padding: 16px; /* Space inside the ring for the logo */
+            width: 90px;
+            height: 90px;
+            padding: 12px; 
             box-sizing: border-box;
-            
-            /* 3D Sphere/Dome gradient */
             background: radial-gradient(circle at 35% 35%, #4a4a4a, #0a0a0a);
-            
-            /* Silver/Gray ring like Xbox button */
             border: 3px solid #888;
             border-radius: 50%;
-            
             object-fit: contain;
-            
-            /* Outer shadow for pop, Inner shadows for dome reflection */
             box-shadow: 0 8px 15px rgba(0,0,0,0.9), 
                         inset 0 -4px 10px rgba(0,0,0,0.6), 
                         inset 0 3px 5px rgba(255,255,255,0.3);
-                        
             cursor: pointer;
             transition: all 0.1s ease;
         }
@@ -146,12 +169,12 @@
             background-color: #050505;
             border: 1px solid #222;
             border-radius: 12px;
-            padding: 10px 10px;
+            padding: 8px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
+            gap: 2px;
             box-shadow: inset 0 2px 10px rgba(0,0,0,1);
         }
 
@@ -165,11 +188,11 @@
         #readout, #status-text, #telemetry-rx {
             color: #2ecc71;
             font-family: monospace;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             text-align: center;
         }
-        #status-text { color: #e74c3c; font-size: 13px; }
+        #status-text { color: #e74c3c; font-size: 12px; }
         #telemetry-rx { color: #3498db; }
 
         /* BUTTON CLUSTERS */
@@ -178,6 +201,7 @@
             grid-template-columns: 50px 50px 50px; 
             grid-template-rows: 50px 50px 50px;
             gap: 4px; 
+            transition: opacity 0.3s ease;
         }
 
         /* COMMON BUTTON POSITIONING */
@@ -189,7 +213,7 @@
         /* D-PAD STYLING (LEFT SIDE) */
         .btn-dpad {
             background: linear-gradient(145deg, #3a3a3a, #222);
-            border-radius: 8px; /* Slightly squared off like PS d-pad */
+            border-radius: 8px;
             border: 1px solid #1a1a1a;
             color: #888;
             font-size: 18px; 
@@ -209,7 +233,7 @@
         /* ACTION BUTTON STYLING (RIGHT SIDE) */
         .btn-action {
             background: linear-gradient(145deg, #333, #1a1a1a);
-            border-radius: 50%; /* Perfect circles */
+            border-radius: 50%;
             border: 1px solid #111;
             display: flex;
             justify-content: center;
@@ -223,11 +247,11 @@
             transform: translateY(5px);
         }
 
-        /* PLAYSTATION BUTTON COLORS AND SIZES */
-        #btn-tri { color: #10eb71; font-size: 20px; } /* Triangle (Green) */
-        #btn-cir { color: #f2355b; font-size: 22px; } /* Circle (Red) */
-        #btn-cross { color: #5976eb; font-size: 20px; } /* Cross (Blue) */
-        #btn-sq { color: #df55a3; font-size: 24px; } /* Square (Pink) */
+        /* PLAYSTATION BUTTON COLORS */
+        #btn-tri { color: #10eb71; font-size: 20px; } 
+        #btn-cir { color: #f2355b; font-size: 22px; } 
+        #btn-cross { color: #5976eb; font-size: 20px; } 
+        #btn-sq { color: #df55a3; font-size: 24px; } 
 
         /* JOYSTICKS */
         .joystick-base {
@@ -238,12 +262,12 @@
             position: relative;
             border: 2px solid #2a2a2a;
             box-shadow: inset 0px 0px 25px rgba(0,0,0,0.9), 0 5px 15px rgba(0,0,0,0.5);
+            transition: opacity 0.3s ease;
         }
         
         .joystick-stick {
             width: 60px; 
             height: 60px;
-            /* Textured dark rubber look */
             background: radial-gradient(circle at center, #444 30%, #1a1a1a 90%);
             border-radius: 50%;
             position: absolute;
@@ -254,7 +278,6 @@
             pointer-events: none;
             transition: transform 0.05s linear;
         }
-        /* Adding an inner ring to mimic real thumbsticks */
         .joystick-stick::after {
             content: '';
             position: absolute;
@@ -274,9 +297,9 @@
 
     <div class="app-container">
         
-        <!-- LEFT SIDE (D-PAD) -->
+        <!-- LEFT SIDE (D-PAD & Left Joystick) -->
         <div class="side-panel">
-            <div class="button-cluster">
+            <div class="button-cluster" id="left-dpad-cluster">
                 <div class="btn btn-dpad btn-top" id="btn-up">▲</div>
                 <div class="btn btn-dpad btn-left" id="btn-left">◀</div>
                 <div class="btn btn-dpad btn-right" id="btn-right">▶</div>
@@ -289,24 +312,30 @@
 
         <!-- CENTER SIDE -->
         <div class="center-panel">
+            
+            <!-- NEW: ROBOT MODE SELECTOR -->
+            <div class="robot-selector">
+                <div class="mode-btn active" id="mode-blitz">BLITZ</div>
+                <div class="mode-btn" id="mode-tracer">TRACER</div>
+            </div>
+
             <button id="btn-connect">Connect BLITZ</button>
             
-            <!-- REDESIGNED XBOX-STYLE HOME BUTTON -->
             <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo" id="logo-fullscreen">
             
             <div class="telemetry-box">
                 <div class="telemetry-label">Status</div>
                 <div id="status-text">OFFLINE</div>
-                <div class="telemetry-label" style="margin-top: 4px;">Sent Cmd</div>
+                <div class="telemetry-label" style="margin-top: 2px;">Sent Cmd</div>
                 <div id="readout">M_N</div>
-                <div class="telemetry-label" style="margin-top: 4px;">BLITZ DATA</div>
+                <div class="telemetry-label" style="margin-top: 2px;" id="rx-label">BLITZ DATA</div>
                 <div id="telemetry-rx">WAITING...</div>
             </div>
         </div>
 
-        <!-- RIGHT SIDE (ACTION BUTTONS) -->
+        <!-- RIGHT SIDE (ACTION BUTTONS & Right Joystick) -->
         <div class="side-panel">
-            <div class="button-cluster">
+            <div class="button-cluster" id="right-action-cluster">
                 <div class="btn btn-action btn-top" id="btn-tri">▲</div>
                 <div class="btn btn-action btn-left" id="btn-sq">■</div>
                 <div class="btn btn-action btn-right" id="btn-cir">●</div>
@@ -320,7 +349,60 @@
     </div>
 
     <script>
+        // ==========================================
+        // ROBOT MODE SELECTOR LOGIC
+        // ==========================================
+        const modeBlitz = document.getElementById('mode-blitz');
+        const modeTracer = document.getElementById('mode-tracer');
+        
+        const joyLeft = document.getElementById('joy-left');
+        const joyRight = document.getElementById('joy-right');
+        const rightActionCluster = document.getElementById('right-action-cluster');
+        
+        const connectBtn = document.getElementById('btn-connect');
+        const rxLabel = document.getElementById('rx-label');
+        
+        let currentRobot = 'BLITZ';
+
+        function setRobotMode(mode) {
+            currentRobot = mode;
+            if (mode === 'BLITZ') {
+                modeBlitz.classList.add('active');
+                modeTracer.classList.remove('active');
+                
+                // Show full UI
+                joyLeft.style.display = 'block';
+                joyRight.style.display = 'block';
+                rightActionCluster.style.display = 'grid';
+                
+                // Update Text
+                rxLabel.innerText = 'BLITZ DATA';
+                if(document.getElementById('status-text').innerText !== "CONNECTED") {
+                    connectBtn.innerText = 'Connect BLITZ';
+                }
+            } else {
+                modeTracer.classList.add('active');
+                modeBlitz.classList.remove('active');
+                
+                // Hide joysticks and right action buttons for TRACER
+                joyLeft.style.display = 'none';
+                joyRight.style.display = 'none';
+                rightActionCluster.style.display = 'none';
+                
+                // Update Text
+                rxLabel.innerText = 'TRACER DATA';
+                if(document.getElementById('status-text').innerText !== "CONNECTED") {
+                    connectBtn.innerText = 'Connect TRACER';
+                }
+            }
+        }
+
+        modeBlitz.addEventListener('click', () => setRobotMode('BLITZ'));
+        modeTracer.addEventListener('click', () => setRobotMode('TRACER'));
+
+        // ==========================================
         // FULLSCREEN TOGGLE VIA LOGO
+        // ==========================================
         const logoFullscreen = document.getElementById('logo-fullscreen');
         logoFullscreen.addEventListener('click', () => {
             let docElm = document.documentElement;
@@ -352,12 +434,15 @@
         const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
         const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
-        const connectBtn = document.getElementById('btn-connect');
         const readout = document.getElementById('readout');
         const statusText = document.getElementById('status-text');
         const telemetryRx = document.getElementById('telemetry-rx');
 
         connectBtn.addEventListener('click', async () => {
+            if (rxCharacteristic) { // If already connected, disconnect logic could go here
+                return;
+            }
+
             try {
                 statusText.innerText = "SCANNING...";
                 statusText.style.color = "#f39c12"; 
@@ -399,8 +484,6 @@
             let decoder = new TextDecoder('utf-8');
             let receivedString = decoder.decode(value).trim();
             receivedString = receivedString.replace("#", "");
-
-            console.log("BLITZ DATA RECEIVED:", receivedString);
             telemetryRx.innerText = receivedString;
         }
 
@@ -409,7 +492,7 @@
             statusText.style.color = "#e74c3c"; 
             telemetryRx.innerText = "WAITING...";
             
-            connectBtn.innerText = "Connect BLITZ";
+            connectBtn.innerText = `Connect ${currentRobot}`;
             connectBtn.style.background = "linear-gradient(145deg, #333, #222)";
             connectBtn.style.borderColor = "#444";
             connectBtn.style.boxShadow = "0px 4px 0px #111";
