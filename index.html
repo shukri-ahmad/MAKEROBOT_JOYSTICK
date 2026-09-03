@@ -235,6 +235,7 @@
         }
 
         // UPGRADED SEND FUNCTION
+        // UPGRADED SEND FUNCTION (Using "#" Delimiter)
         async function sendCommand(cmd) {
             console.log("SENDING:", cmd);
             readout.innerText = "CMD: " + cmd;
@@ -242,9 +243,9 @@
             if (!txCharacteristic) return; 
 
             try {
-                // Add the newline character (\n) required by MakeCode
+                // Add the hashtag (#) so MakeCode knows the message is finished!
                 let encoder = new TextEncoder();
-                let data = encoder.encode(cmd + "\n");
+                let data = encoder.encode(cmd + "#");
                 
                 // Write without response prevents the browser from queue-locking
                 if (txCharacteristic.properties.writeWithoutResponse) {
@@ -254,6 +255,7 @@
                 }
             } catch (error) {
                 console.error('Send Error:', error);
+                readout.innerText = "SEND ERROR";
             }
         }
 
