@@ -163,7 +163,7 @@
             border: 2px solid #2c3e50;
             color: white;
             font-weight: bold;
-            font-size: 11px; 
+            font-size: 14px; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -172,6 +172,64 @@
         .btn:active, .btn.active {
             background-color: #2980b9;
             box-shadow: 0px 0px 0px #1c2833;
+            transform: translateY(4px);
+        }
+
+        /* ARROW BUTTON STYLES (PURE CSS TRIANGLES) */
+        .btn-arrow {
+            width: 0;
+            height: 0;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            filter: drop-shadow(0px 4px 0px #1c2833);
+            cursor: pointer;
+        }
+
+        .btn-arrow.btn-top {
+            grid-column: 2; grid-row: 1;
+            border-left: 22px solid transparent;
+            border-right: 22px solid transparent;
+            border-bottom: 38px solid #3455db;
+        }
+        .btn-arrow.btn-bottom {
+            grid-column: 2; grid-row: 3;
+            border-left: 22px solid transparent;
+            border-right: 22px solid transparent;
+            border-top: 38px solid #3455db;
+        }
+        .btn-arrow.btn-left {
+            grid-column: 1; grid-row: 2;
+            border-top: 22px solid transparent;
+            border-bottom: 22px solid transparent;
+            border-right: 38px solid #3455db;
+        }
+        .btn-arrow.btn-right {
+            grid-column: 3; grid-row: 2;
+            border-top: 22px solid transparent;
+            border-bottom: 22px solid transparent;
+            border-left: 38px solid #3455db;
+        }
+
+        /* ARROW ACTIVE STATES */
+        .btn-arrow.btn-top:active, .btn-arrow.btn-top.active {
+            border-bottom-color: #2980b9;
+            filter: drop-shadow(0px 0px 0px #1c2833);
+            transform: translateY(4px);
+        }
+        .btn-arrow.btn-bottom:active, .btn-arrow.btn-bottom.active {
+            border-top-color: #2980b9;
+            filter: drop-shadow(0px 0px 0px #1c2833);
+            transform: translateY(4px);
+        }
+        .btn-arrow.btn-left:active, .btn-arrow.btn-left.active {
+            border-right-color: #2980b9;
+            filter: drop-shadow(0px 0px 0px #1c2833);
+            transform: translateY(4px);
+        }
+        .btn-arrow.btn-right:active, .btn-arrow.btn-right.active {
+            border-left-color: #2980b9;
+            filter: drop-shadow(0px 0px 0px #1c2833);
             transform: translateY(4px);
         }
 
@@ -214,13 +272,13 @@
 
     <div class="app-container">
         
-        <!-- LEFT SIDE -->
+        <!-- LEFT SIDE (DIRECTIONAL ARROW BUTTONS) -->
         <div class="side-panel">
             <div class="button-cluster">
-                <div class="btn btn-top" id="btn-up">UP</div>
-                <div class="btn btn-left" id="btn-left">LT</div>
-                <div class="btn btn-right" id="btn-right">RT</div>
-                <div class="btn btn-bottom" id="btn-down">DN</div>
+                <div class="btn-arrow btn-top" id="btn-up"></div>
+                <div class="btn-arrow btn-left" id="btn-left"></div>
+                <div class="btn-arrow btn-right" id="btn-right"></div>
+                <div class="btn-arrow btn-bottom" id="btn-down"></div>
             </div>
             <div class="joystick-base" id="joy-left">
                 <div class="joystick-stick" id="stick-left"></div>
@@ -243,7 +301,7 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDE -->
+        <!-- RIGHT SIDE (ACTION BUTTONS) -->
         <div class="side-panel">
             <div class="button-cluster">
                 <div class="btn btn-top" id="btn-y">Y</div>
@@ -374,13 +432,13 @@
         // ==========================================
         // CONTROLLER LOGIC
         // ==========================================
-        // UPDATED: Used 'a' and 'b' lowercase to prevent micro:bit pin conflict (A0/A1)
         const btnCodes = {
             'btn-up': 'U', 'btn-down': 'D', 'btn-left': 'L', 'btn-right': 'R',
             'btn-y': 'Y', 'btn-a': 'a', 'btn-x': 'X', 'btn-b': 'b'
         };
 
-        const buttons = document.querySelectorAll('.btn');
+        // Select both circular buttons (.btn) and arrow buttons (.btn-arrow)
+        const buttons = document.querySelectorAll('.btn, .btn-arrow');
         buttons.forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
