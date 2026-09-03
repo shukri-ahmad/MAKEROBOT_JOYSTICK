@@ -17,6 +17,28 @@
             display: flex;
             height: 100vh;
             width: 100vw;
+            position: relative; /* Needed to anchor the absolute logo */
+        }
+
+        /* WATERMARK LOGO */
+        .center-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 35vw; /* Adjusts how much of the screen the logo takes up */
+            pointer-events: none; /* Prevents it from blocking touches */
+            z-index: -1; /* Pushes it completely into the background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .center-logo img {
+            max-width: 100%;
+            height: auto;
+            opacity: 0.15; /* 0.0 is invisible, 1.0 is solid. 0.15 makes it a faint watermark! */
+            /* filter: grayscale(100%);  <-- Remove the /* to make the watermark black-and-white */
         }
 
         .controller-half {
@@ -26,22 +48,6 @@
             justify-content: space-around;
             align-items: center;
             padding: 20px;
-        }
-
-        /* Center Logo Section */
-        .center-logo {
-            flex: 0.6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none; /* Prevents logo from interfering with multi-touch swipes */
-        }
-        
-        .center-logo img {
-            max-width: 100%;
-            height: auto;
-            background-color: transparent;
-            opacity: 0.85; /* Slight fade so it doesn't distract from the controls */
         }
 
         /* Button Clusters */
@@ -117,6 +123,11 @@
 
     <div id="readout">SYSTEM READY</div>
 
+    <!-- WATERMARK CENTER LOGO -->
+    <div class="center-logo">
+        <img src="icon.png" alt="">
+    </div>
+
     <!-- LEFT SIDE: D-Pad & Left Stick -->
     <div class="controller-half">
         <div class="button-cluster">
@@ -128,11 +139,6 @@
         <div class="joystick-base" id="joy-left">
             <div class="joystick-stick" id="stick-left"></div>
         </div>
-    </div>
-
-    <!-- CENTER: Logo -->
-    <div class="center-logo">
-        <img src="icon.png" alt="MAKEROBOT Logo">
     </div>
 
     <!-- RIGHT SIDE: ABXY & Right Stick -->
