@@ -17,7 +17,7 @@
             display: flex;
             height: 100vh;
             width: 100vw;
-            position: relative; /* Needed to anchor the absolute logo */
+            position: relative;
         }
 
         /* WATERMARK LOGO */
@@ -26,9 +26,9 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 35vw; /* Adjusts how much of the screen the logo takes up */
-            pointer-events: none; /* Prevents it from blocking touches */
-            z-index: -1; /* Pushes it completely into the background */
+            width: 35vw; 
+            pointer-events: none; 
+            z-index: -1; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -37,8 +37,7 @@
         .center-logo img {
             max-width: 100%;
             height: auto;
-            opacity: 0.15; /* 0.0 is invisible, 1.0 is solid. 0.15 makes it a faint watermark! */
-            /* filter: grayscale(100%);  <-- Remove the /* to make the watermark black-and-white */
+            opacity: 0.15; 
         }
 
         .controller-half {
@@ -114,7 +113,7 @@
             color: #2ecc71;
             font-family: monospace;
             pointer-events: none;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
         }
     </style>
@@ -161,11 +160,6 @@
             'btn-y': 'Y', 'btn-a': 'A', 'btn-x': 'X', 'btn-b': 'B'
         };
 
-        const dirCodes = {
-            "NONE": "N", "UP": "U", "DOWN": "D", "LEFT": "L", "RIGHT": "R",
-            "UP-LEFT": "UL", "UP-RIGHT": "UR", "DOWN-LEFT": "DL", "DOWN-RIGHT": "DR"
-        };
-
         // --- BUTTON HANDLING ---
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
@@ -176,6 +170,7 @@
                 let cmd = btnCodes[btn.id] + "1";
                 console.log("SENDING:", cmd);
                 document.getElementById('readout').innerText = "CMD: " + cmd;
+                // TODO: Web Bluetooth Send
                 
             }, {passive: false});
 
@@ -186,35 +181,64 @@
                 let cmd = btnCodes[btn.id] + "0";
                 console.log("SENDING:", cmd);
                 document.getElementById('readout').innerText = "CMD: " + cmd;
+                // TODO: Web Bluetooth Send
                 
             }, {passive: false});
             
             btn.addEventListener('touchcancel', (e) => {
                 btn.classList.remove('active');
-                console.log("SENDING:", btnCodes[btn.id] + "0");
             });
         });
 
-        // --- 8-WAY JOYSTICK HANDLING ---
-        function setupJoystick(baseId, stickId, stickPrefix) {
+        // --- COMBINED JOYSTICK LOGIC ---
+        let leftDir = "N";
+        let rightDir = "N";
+        let currentMoveCmd = "M_N"; 
+
+        function updateMovement() {
+            let newMoveCmd = "M_N"; // Default to stop
+
+            // Straight Forward / Backward
+            if (leftDir === "U" && rightDir === "N") newMoveCmd = "M_U";
+            else if (leftDir === "D" && rightDir === "N") newMoveCmd = "M_D";
+            
+            // Pivot Left / Right
+            else if (leftDir === "N" && rightDir === "L") newMoveCmd = "M_L";
+            else if (leftDir === "N" && rightDir === "R") newMoveCmd = "M_R";
+            
+            // Cornering Forward
+            else if (leftDir === "U" && rightDir === "L") newMoveCmd = "M_UL";
+            else if (leftDir === "U" && rightDir === "R") newMoveCmd = "M_UR";
+            
+            // Cornering Backward
+            else if (leftDir === "D" && rightDir === "L") newMoveCmd = "M_DL";
+            else if (leftDir === "D" && rightDir === "R") newMoveCmd = "M_DR";
+
+            // Only send if the combined command actually changed!
+            if (newMoveCmd !== currentMoveCmd) {
+                currentMoveCmd = newMoveCmd;
+                console.log("SENDING:", currentMoveCmd);
+                document.getElementById('readout').innerText = "CMD: " + currentMoveCmd;
+                // TODO: Web Bluetooth Send
+            }
+        }
+
+        // --- 8-WAY JOYSTICK SENSING ---
+        function setupJoystick(baseId, stickId, side) {
             const base = document.getElementById(baseId);
             const stick = document.getElementById(stickId);
             const maxRadius = 45; 
             const deadzone = 15;  
 
             let activeTouchId = null;
-            let currentDir = "NONE";
 
             function resetStick() {
                 stick.style.transform = `translate(0px, 0px)`;
                 activeTouchId = null;
                 
-                if (currentDir !== "NONE") {
-                    currentDir = "NONE";
-                    let cmd = stickPrefix + "_" + dirCodes[currentDir];
-                    console.log("SENDING:", cmd);
-                    document.getElementById('readout').innerText = "CMD: " + cmd;
-                }
+                if (side === 'L') leftDir = "N";
+                if (side === 'R') rightDir = "N";
+                updateMovement();
             }
 
             function handleTouch(e) {
@@ -255,24 +279,25 @@
 
                 stick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
 
-                let newDir = "NONE";
+                let newDir = "N";
                 if (distance > deadzone) {
-                    if (angleDeg > -22.5 && angleDeg <= 22.5) newDir = "RIGHT";
-                    else if (angleDeg > 22.5 && angleDeg <= 67.5) newDir = "DOWN-RIGHT";
-                    else if (angleDeg > 67.5 && angleDeg <= 112.5) newDir = "DOWN";
-                    else if (angleDeg > 112.5 && angleDeg <= 157.5) newDir = "DOWN-LEFT";
-                    else if (angleDeg > 157.5 || angleDeg <= -157.5) newDir = "LEFT";
-                    else if (angleDeg > -157.5 && angleDeg <= -112.5) newDir = "UP-LEFT";
-                    else if (angleDeg > -112.5 && angleDeg <= -67.5) newDir = "UP";
-                    else if (angleDeg > -67.5 && angleDeg <= -22.5) newDir = "UP-RIGHT";
+                    if (angleDeg > -22.5 && angleDeg <= 22.5) newDir = "R";
+                    else if (angleDeg > 22.5 && angleDeg <= 67.5) newDir = "DR";
+                    else if (angleDeg > 67.5 && angleDeg <= 112.5) newDir = "D";
+                    else if (angleDeg > 112.5 && angleDeg <= 157.5) newDir = "DL";
+                    else if (angleDeg > 157.5 || angleDeg <= -157.5) newDir = "L";
+                    else if (angleDeg > -157.5 && angleDeg <= -112.5) newDir = "UL";
+                    else if (angleDeg > -112.5 && angleDeg <= -67.5) newDir = "U";
+                    else if (angleDeg > -67.5 && angleDeg <= -22.5) newDir = "UR";
                 }
 
-                // Only log and update if the direction actually changed
-                if (newDir !== currentDir) {
-                    currentDir = newDir;
-                    let cmd = stickPrefix + "_" + dirCodes[currentDir];
-                    console.log("SENDING:", cmd);
-                    document.getElementById('readout').innerText = "CMD: " + cmd;
+                // Update the state based on which stick moved
+                if (side === 'L' && leftDir !== newDir) {
+                    leftDir = newDir;
+                    updateMovement();
+                } else if (side === 'R' && rightDir !== newDir) {
+                    rightDir = newDir;
+                    updateMovement();
                 }
             }
 
