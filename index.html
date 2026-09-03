@@ -136,9 +136,9 @@
         /* BUTTON CLUSTERS (Smaller & Tighter) */
         .button-cluster {
             display: grid;
-            grid-template-columns: 45px 45px 45px; /* Reduced from 50px */
+            grid-template-columns: 45px 45px 45px; 
             grid-template-rows: 45px 45px 45px;
-            gap: 2px; /* Tightly packed */
+            gap: 2px; 
         }
 
         .btn {
@@ -147,7 +147,7 @@
             border: 2px solid #2c3e50;
             color: white;
             font-weight: bold;
-            font-size: 11px; /* Slightly smaller text */
+            font-size: 11px; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -166,7 +166,7 @@
 
         /* JOYSTICKS (Bigger) */
         .joystick-base {
-            width: 160px; /* Increased from 130px */
+            width: 160px; 
             height: 160px;
             background-color: #2a2a2a;
             border-radius: 50%;
@@ -176,12 +176,12 @@
         }
         
         .joystick-stick {
-            width: 60px; /* Increased inner thumbstick */
+            width: 60px; 
             height: 60px;
             background-color: #e74c3c;
             border-radius: 50%;
             position: absolute;
-            top: 50px; /* (160 - 60) / 2 = 50px perfectly centered */
+            top: 50px; 
             left: 50px;
             box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4), 0px 5px 10px rgba(0,0,0,0.5);
             pointer-events: none;
@@ -271,17 +271,18 @@
         const statusText = document.getElementById('status-text');
 
         connectBtn.addEventListener('click', async () => {
-            // Trigger Fullscreen immediately when they click!
-            try { requestFullScreen(); } catch(e) { console.log("Fullscreen blocked"); }
-
             try {
                 statusText.innerText = "SCANNING...";
                 statusText.style.color = "#f39c12"; 
                 
+                // 1. Trigger Bluetooth FIRST (Uses the physical tap for security)
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'BBC micro:bit' }],
                     optionalServices: [UART_SERVICE_UUID]
                 });
+
+                // 2. Trigger Fullscreen AFTER the device menu pops up
+                try { requestFullScreen(); } catch(e) { console.log("Fullscreen blocked"); }
 
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
 
@@ -385,9 +386,8 @@
             const base = document.getElementById(baseId);
             const stick = document.getElementById(stickId);
             
-            // Updated math for the larger 160px base
-            const maxRadius = 50; // Visual travel limit 
-            const deadzone = 15;  // Requires more push before moving
+            const maxRadius = 50; 
+            const deadzone = 15;  
 
             let activeTouchId = null;
 
