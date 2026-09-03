@@ -147,7 +147,7 @@
             text-align: center;
         }
         #status-text { color: #e74c3c; font-size: 13px; }
-        #telemetry-rx { color: #3498db; } /* Cyan text for BLITZ DATA */
+        #telemetry-rx { color: #3498db; }
 
         /* BUTTON CLUSTERS */
         .button-cluster {
@@ -238,7 +238,6 @@
                 <div id="status-text">OFFLINE</div>
                 <div class="telemetry-label" style="margin-top: 4px;">Sent Cmd</div>
                 <div id="readout">M_N</div>
-                <!-- RE-LABELED TELEMETRY HEADER -->
                 <div class="telemetry-label" style="margin-top: 4px;">BLITZ DATA</div>
                 <div id="telemetry-rx">WAITING...</div>
             </div>
@@ -313,10 +312,7 @@
                 bleServer = await bleDevice.gatt.connect();
                 uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
                 
-                // Get RX Characteristic (To SEND commands to micro:bit)
                 rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
-
-                // Get TX Characteristic (To RECEIVE telemetry from micro:bit)
                 txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
                 await txCharacteristic.startNotifications();
                 txCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingTelemetry);
@@ -335,13 +331,10 @@
             }
         });
 
-        // HANDLE INCOMING TELEMETRY FROM MICRO:BIT
         function handleIncomingTelemetry(event) {
             let value = event.target.value;
             let decoder = new TextDecoder('utf-8');
             let receivedString = decoder.decode(value).trim();
-            
-            // Clean out the delimiter if present
             receivedString = receivedString.replace("#", "");
 
             console.log("BLITZ DATA RECEIVED:", receivedString);
@@ -381,9 +374,10 @@
         // ==========================================
         // CONTROLLER LOGIC
         // ==========================================
+        // UPDATED: Used 'a' and 'b' lowercase to prevent micro:bit pin conflict (A0/A1)
         const btnCodes = {
             'btn-up': 'U', 'btn-down': 'D', 'btn-left': 'L', 'btn-right': 'R',
-            'btn-y': 'Y', 'btn-a': 'A', 'btn-x': 'X', 'btn-b': 'B'
+            'btn-y': 'Y', 'btn-a': 'a', 'btn-x': 'X', 'btn-b': 'b'
         };
 
         const buttons = document.querySelectorAll('.btn');
