@@ -11,7 +11,7 @@
             background-color: #1e1e1e;
             color: white;
             font-family: Arial, sans-serif;
-            touch-action: none;
+            touch-action: none; /* Stops swiping/scrolling */
             user-select: none;
             overflow: hidden;
             display: flex;
@@ -27,8 +27,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 35vw; 
-            pointer-events: none; 
-            z-index: -1; 
+            pointer-events: none; /* Prevents it from blocking touches */
+            z-index: -1; /* Pushes it to the background */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -37,7 +37,7 @@
         .center-logo img {
             max-width: 100%;
             height: auto;
-            opacity: 0.15; 
+            opacity: 0.15; /* Makes it translucent */
         }
 
         .controller-half {
@@ -47,6 +47,45 @@
             justify-content: space-around;
             align-items: center;
             padding: 20px;
+        }
+
+        /* Top Bar UI */
+        #top-bar {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        #readout {
+            color: #2ecc71;
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #btn-connect {
+            pointer-events: auto;
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0px 4px 0px #d35400;
+        }
+
+        #btn-connect:active {
+            transform: translateY(4px);
+            box-shadow: 0px 0px 0px #d35400;
         }
 
         /* Button Clusters */
@@ -103,45 +142,6 @@
             pointer-events: none;
             transition: transform 0.1s;
         }
-
-        /* Top Bar UI */
-        #top-bar {
-            position: absolute;
-            top: 10px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            box-sizing: border-box;
-            pointer-events: none;
-        }
-
-        #readout {
-            color: #2ecc71;
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        #btn-connect {
-            pointer-events: auto; /* Allow clicking */
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0px 4px 0px #d35400;
-        }
-
-        #btn-connect:active {
-            transform: translateY(4px);
-            box-shadow: 0px 0px 0px #d35400;
-        }
     </style>
 </head>
 <body>
@@ -192,7 +192,7 @@
         let uartService;
         let txCharacteristic;
 
-        // Standard Nordic UART Service UUIDs used by micro:bit
+        // Nordic UART Service UUIDs
         const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
         const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
@@ -203,30 +203,21 @@
             try {
                 readout.innerText = "SCANNING...";
                 
-                // 1. Request Bluetooth Device (Filtering for micro:bit)
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'BBC micro:bit' }],
                     optionalServices: [UART_SERVICE_UUID]
                 });
 
-                // Listen for disconnects
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
 
                 readout.innerText = "CONNECTING...";
-                
-                // 2. Connect to the GATT server
                 bleServer = await bleDevice.gatt.connect();
-
-                // 3. Get the UART Service
                 uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
-
-                // 4. Get the TX Characteristic (To send data TO the micro:bit)
                 txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
 
-                // Update UI
                 readout.innerText = "CONNECTED!";
                 connectBtn.innerText = "CONNECTED";
-                connectBtn.style.backgroundColor = "#2ecc71"; // Green
+                connectBtn.style.backgroundColor = "#2ecc71";
                 connectBtn.style.boxShadow = "0px 4px 0px #27ae60";
 
             } catch (error) {
@@ -238,22 +229,29 @@
         function onDisconnected() {
             readout.innerText = "DISCONNECTED";
             connectBtn.innerText = "CONNECT BLUETOOTH";
-            connectBtn.style.backgroundColor = "#e74c3c"; // Red
+            connectBtn.style.backgroundColor = "#e74c3c";
             connectBtn.style.boxShadow = "0px 4px 0px #c0392b";
             txCharacteristic = null;
         }
 
-        // Send the string command via Bluetooth
+        // UPGRADED SEND FUNCTION
         async function sendCommand(cmd) {
             console.log("SENDING:", cmd);
             readout.innerText = "CMD: " + cmd;
 
-            if (!txCharacteristic) return; // Ignore if not connected
+            if (!txCharacteristic) return; 
 
             try {
-                // Add the newline character (\n) so MakeCode knows the message is finished
+                // Add the newline character (\n) required by MakeCode
                 let encoder = new TextEncoder();
-                await txCharacteristic.writeValue(encoder.encode(cmd + "\n"));
+                let data = encoder.encode(cmd + "\n");
+                
+                // Write without response prevents the browser from queue-locking
+                if (txCharacteristic.properties.writeWithoutResponse) {
+                    await txCharacteristic.writeValueWithoutResponse(data);
+                } else {
+                    await txCharacteristic.writeValue(data);
+                }
             } catch (error) {
                 console.error('Send Error:', error);
             }
@@ -262,13 +260,11 @@
         // ==========================================
         // CONTROLLER LOGIC
         // ==========================================
-
         const btnCodes = {
             'btn-up': 'U', 'btn-down': 'D', 'btn-left': 'L', 'btn-right': 'R',
             'btn-y': 'Y', 'btn-a': 'A', 'btn-x': 'X', 'btn-b': 'B'
         };
 
-        // --- BUTTON HANDLING ---
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
@@ -289,7 +285,7 @@
             });
         });
 
-        // --- COMBINED JOYSTICK LOGIC ---
+        // Combined logic for tank/mecanum control
         let leftDir = "N";
         let rightDir = "N";
         let currentMoveCmd = "M_N"; 
@@ -312,7 +308,7 @@
             }
         }
 
-        // --- 8-WAY JOYSTICK SENSING ---
+        // 8-Way Thumbstick Sensing
         function setupJoystick(baseId, stickId, side) {
             const base = document.getElementById(baseId);
             const stick = document.getElementById(stickId);
