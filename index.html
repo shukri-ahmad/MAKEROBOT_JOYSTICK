@@ -104,23 +104,53 @@
             transition: transform 0.1s;
         }
 
-        #readout {
+        /* Top Bar UI */
+        #top-bar {
             position: absolute;
             top: 10px;
             left: 0;
             width: 100%;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        #readout {
             color: #2ecc71;
             font-family: monospace;
-            pointer-events: none;
             font-size: 18px;
             font-weight: bold;
+        }
+
+        #btn-connect {
+            pointer-events: auto; /* Allow clicking */
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0px 4px 0px #d35400;
+        }
+
+        #btn-connect:active {
+            transform: translateY(4px);
+            box-shadow: 0px 0px 0px #d35400;
         }
     </style>
 </head>
 <body>
 
-    <div id="readout">SYSTEM READY</div>
+    <!-- Top UI Bar -->
+    <div id="top-bar">
+        <div id="readout">SYSTEM READY</div>
+        <button id="btn-connect">CONNECT BLUETOOTH</button>
+    </div>
 
     <!-- WATERMARK CENTER LOGO -->
     <div class="center-logo">
@@ -154,7 +184,85 @@
     </div>
 
     <script>
-        // --- BLUETOOTH SHORTCODE MAPPING ---
+        // ==========================================
+        // WEB BLUETOOTH API
+        // ==========================================
+        let bleDevice;
+        let bleServer;
+        let uartService;
+        let txCharacteristic;
+
+        // Standard Nordic UART Service UUIDs used by micro:bit
+        const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+
+        const connectBtn = document.getElementById('btn-connect');
+        const readout = document.getElementById('readout');
+
+        connectBtn.addEventListener('click', async () => {
+            try {
+                readout.innerText = "SCANNING...";
+                
+                // 1. Request Bluetooth Device (Filtering for micro:bit)
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'BBC micro:bit' }],
+                    optionalServices: [UART_SERVICE_UUID]
+                });
+
+                // Listen for disconnects
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+                readout.innerText = "CONNECTING...";
+                
+                // 2. Connect to the GATT server
+                bleServer = await bleDevice.gatt.connect();
+
+                // 3. Get the UART Service
+                uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
+
+                // 4. Get the TX Characteristic (To send data TO the micro:bit)
+                txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
+
+                // Update UI
+                readout.innerText = "CONNECTED!";
+                connectBtn.innerText = "CONNECTED";
+                connectBtn.style.backgroundColor = "#2ecc71"; // Green
+                connectBtn.style.boxShadow = "0px 4px 0px #27ae60";
+
+            } catch (error) {
+                console.error('Bluetooth Error:', error);
+                readout.innerText = "CONNECTION FAILED";
+            }
+        });
+
+        function onDisconnected() {
+            readout.innerText = "DISCONNECTED";
+            connectBtn.innerText = "CONNECT BLUETOOTH";
+            connectBtn.style.backgroundColor = "#e74c3c"; // Red
+            connectBtn.style.boxShadow = "0px 4px 0px #c0392b";
+            txCharacteristic = null;
+        }
+
+        // Send the string command via Bluetooth
+        async function sendCommand(cmd) {
+            console.log("SENDING:", cmd);
+            readout.innerText = "CMD: " + cmd;
+
+            if (!txCharacteristic) return; // Ignore if not connected
+
+            try {
+                // Add the newline character (\n) so MakeCode knows the message is finished
+                let encoder = new TextEncoder();
+                await txCharacteristic.writeValue(encoder.encode(cmd + "\n"));
+            } catch (error) {
+                console.error('Send Error:', error);
+            }
+        }
+
+        // ==========================================
+        // CONTROLLER LOGIC
+        // ==========================================
+
         const btnCodes = {
             'btn-up': 'U', 'btn-down': 'D', 'btn-left': 'L', 'btn-right': 'R',
             'btn-y': 'Y', 'btn-a': 'A', 'btn-x': 'X', 'btn-b': 'B'
@@ -166,27 +274,18 @@
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 btn.classList.add('active');
-                
-                let cmd = btnCodes[btn.id] + "1";
-                console.log("SENDING:", cmd);
-                document.getElementById('readout').innerText = "CMD: " + cmd;
-                // TODO: Web Bluetooth Send
-                
+                sendCommand(btnCodes[btn.id] + "1");
             }, {passive: false});
 
             btn.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 btn.classList.remove('active');
-                
-                let cmd = btnCodes[btn.id] + "0";
-                console.log("SENDING:", cmd);
-                document.getElementById('readout').innerText = "CMD: " + cmd;
-                // TODO: Web Bluetooth Send
-                
+                sendCommand(btnCodes[btn.id] + "0");
             }, {passive: false});
             
             btn.addEventListener('touchcancel', (e) => {
                 btn.classList.remove('active');
+                sendCommand(btnCodes[btn.id] + "0");
             });
         });
 
@@ -196,30 +295,20 @@
         let currentMoveCmd = "M_N"; 
 
         function updateMovement() {
-            let newMoveCmd = "M_N"; // Default to stop
+            let newMoveCmd = "M_N"; 
 
-            // Straight Forward / Backward
             if (leftDir === "U" && rightDir === "N") newMoveCmd = "M_U";
             else if (leftDir === "D" && rightDir === "N") newMoveCmd = "M_D";
-            
-            // Pivot Left / Right
             else if (leftDir === "N" && rightDir === "L") newMoveCmd = "M_L";
             else if (leftDir === "N" && rightDir === "R") newMoveCmd = "M_R";
-            
-            // Cornering Forward
             else if (leftDir === "U" && rightDir === "L") newMoveCmd = "M_UL";
             else if (leftDir === "U" && rightDir === "R") newMoveCmd = "M_UR";
-            
-            // Cornering Backward
             else if (leftDir === "D" && rightDir === "L") newMoveCmd = "M_DL";
             else if (leftDir === "D" && rightDir === "R") newMoveCmd = "M_DR";
 
-            // Only send if the combined command actually changed!
             if (newMoveCmd !== currentMoveCmd) {
                 currentMoveCmd = newMoveCmd;
-                console.log("SENDING:", currentMoveCmd);
-                document.getElementById('readout').innerText = "CMD: " + currentMoveCmd;
-                // TODO: Web Bluetooth Send
+                sendCommand(currentMoveCmd);
             }
         }
 
@@ -291,7 +380,6 @@
                     else if (angleDeg > -67.5 && angleDeg <= -22.5) newDir = "UR";
                 }
 
-                // Update the state based on which stick moved
                 if (side === 'L' && leftDir !== newDir) {
                     leftDir = newDir;
                     updateMovement();
