@@ -11,7 +11,7 @@
             background-color: #1e1e1e;
             color: white;
             font-family: Arial, sans-serif;
-            touch-action: none; /* Stops swiping/scrolling */
+            touch-action: none;
             user-select: none;
             overflow: hidden;
             display: flex;
@@ -27,8 +27,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 35vw; 
-            pointer-events: none; /* Prevents it from blocking touches */
-            z-index: -1; /* Pushes it to the background */
+            pointer-events: none; 
+            z-index: -1; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -37,7 +37,7 @@
         .center-logo img {
             max-width: 100%;
             height: auto;
-            opacity: 0.15; /* Makes it translucent */
+            opacity: 0.15; 
         }
 
         .controller-half {
@@ -71,7 +71,7 @@
         }
 
         #btn-connect {
-            pointer-events: auto; /* Allow clicking */
+            pointer-events: auto;
             background-color: #e67e22;
             color: white;
             border: none;
@@ -190,11 +190,12 @@
         let bleDevice;
         let bleServer;
         let uartService;
-        let txCharacteristic;
+        let rxCharacteristic; // Renamed to RX (Receive) for clarity
 
         // Nordic UART Service UUIDs
         const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-        const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+        // The micro:bit's RX characteristic (Phone writes TO this) ends in 0003!
+        const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
         const connectBtn = document.getElementById('btn-connect');
         const readout = document.getElementById('readout');
@@ -213,7 +214,9 @@
                 readout.innerText = "CONNECTING...";
                 bleServer = await bleDevice.gatt.connect();
                 uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
-                txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
+                
+                // Get the correct WRITE characteristic (0003)
+                rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
 
                 readout.innerText = "CONNECTED!";
                 connectBtn.innerText = "CONNECTED";
@@ -231,15 +234,15 @@
             connectBtn.innerText = "CONNECT BLUETOOTH";
             connectBtn.style.backgroundColor = "#e74c3c";
             connectBtn.style.boxShadow = "0px 4px 0px #c0392b";
-            txCharacteristic = null;
+            rxCharacteristic = null;
         }
 
-        // UPGRADED SEND FUNCTION (Using "#" Delimiter)
+        // UPGRADED SEND FUNCTION (Using "#" Delimiter & correct RX characteristic)
         async function sendCommand(cmd) {
             console.log("SENDING:", cmd);
             readout.innerText = "CMD: " + cmd;
 
-            if (!txCharacteristic) return; 
+            if (!rxCharacteristic) return; 
 
             try {
                 // Add the hashtag (#) so MakeCode knows the message is finished!
@@ -247,10 +250,10 @@
                 let data = encoder.encode(cmd + "#");
                 
                 // Write without response prevents the browser from queue-locking
-                if (txCharacteristic.properties.writeWithoutResponse) {
-                    await txCharacteristic.writeValueWithoutResponse(data);
+                if (rxCharacteristic.properties.writeWithoutResponse) {
+                    await rxCharacteristic.writeValueWithoutResponse(data);
                 } else {
-                    await txCharacteristic.writeValue(data);
+                    await rxCharacteristic.writeValue(data);
                 }
             } catch (error) {
                 console.error('Send Error:', error);
