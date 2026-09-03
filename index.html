@@ -22,7 +22,7 @@
             background-image: radial-gradient(circle at 50% 50%, #1e1e1e 0%, #0a0a0a 100%);
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none; /* Prevents browser gestures/scrolling */
+            touch-action: none; 
             user-select: none;
             overflow: hidden;
             display: flex;
@@ -191,15 +191,26 @@
             transition: color 0.3s ease;
         }
 
-        #readout, #status-text, #telemetry-rx {
+        #readout, #telemetry-rx {
             color: #2ecc71;
             font-family: monospace;
             font-size: 15px;
             font-weight: bold;
             text-align: center;
         }
-        #status-text { color: #e74c3c; font-size: 12px; }
-        #telemetry-rx { color: #3498db; }
+        
+        #telemetry-rx { 
+            color: #3498db; 
+            min-height: 38px; /* Force 2-line height */
+            line-height: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        #status-text { color: #e74c3c; font-size: 12px; font-weight: bold; font-family: monospace; }
 
         /* BUTTON CLUSTERS */
         .button-cluster {
@@ -432,7 +443,8 @@
                 <div class="telemetry-label" style="margin-top: 2px;">Sent Cmd</div>
                 <div id="readout">M_N</div>
                 <div class="telemetry-label" style="margin-top: 2px;" id="rx-label">BLITZ DATA</div>
-                <div id="telemetry-rx">WAITING...</div>
+                <!-- UPDATED: 2 Line Output area -->
+                <div id="telemetry-rx">WAITING...<br>&nbsp;</div>
             </div>
         </div>
 
@@ -586,7 +598,39 @@
 
         const readout = document.getElementById('readout');
         const statusText = document.getElementById('status-text');
+        
+        // 2-LINE TELEMETRY VARIABLES
         const telemetryRx = document.getElementById('telemetry-rx');
+        let telemetryHistory = [];
+        let telemetryScrollIndex = 0;
+        let telemetryScrollTimer = null;
+
+        // Function to render the 2 lines of telemetry
+        function renderTelemetry() {
+            if (telemetryHistory.length === 0) {
+                telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
+            } else if (telemetryHistory.length === 1) {
+                telemetryRx.innerHTML = telemetryHistory[0] + "<br>&nbsp;";
+            } else if (telemetryHistory.length === 2) {
+                telemetryRx.innerHTML = telemetryHistory[0] + "<br>" + telemetryHistory[1];
+            } else {
+                // If more than 2, show the scrolling window
+                let line1 = telemetryHistory[telemetryScrollIndex];
+                let line2 = telemetryHistory[(telemetryScrollIndex + 1) % telemetryHistory.length];
+                telemetryRx.innerHTML = line1 + "<br>" + line2;
+            }
+        }
+
+        function startTelemetryScroll() {
+            if (!telemetryScrollTimer) {
+                telemetryScrollTimer = setInterval(() => {
+                    if (telemetryHistory.length > 2) {
+                        telemetryScrollIndex = (telemetryScrollIndex + 1) % telemetryHistory.length;
+                        renderTelemetry();
+                    }
+                }, 2000); // Scrolls every 2 seconds
+            }
+        }
 
         connectBtn.addEventListener('click', async () => {
             if (rxCharacteristic) return;
@@ -613,7 +657,7 @@
 
                 statusText.innerText = "CONNECTED";
                 statusText.style.color = "#2ecc71"; 
-                telemetryRx.innerText = "READY";
+                telemetryRx.innerHTML = "READY<br>&nbsp;";
                 
                 connectBtn.innerText = "DISCONNECT";
                 connectBtn.style.background = "linear-gradient(145deg, #27ae60, #1e8449)";
@@ -632,13 +676,32 @@
             let decoder = new TextDecoder('utf-8');
             let receivedString = decoder.decode(value).trim();
             receivedString = receivedString.replace("#", "");
-            telemetryRx.innerText = receivedString;
+            
+            // Push to history and constrain to 50 max items to save memory
+            telemetryHistory.push(receivedString);
+            if (telemetryHistory.length > 50) {
+                telemetryHistory.shift(); 
+            }
+            
+            renderTelemetry();
+            
+            if (telemetryHistory.length > 2) {
+                startTelemetryScroll();
+            }
         }
 
         function onDisconnected() {
             statusText.innerText = "OFFLINE";
             statusText.style.color = "#e74c3c"; 
-            telemetryRx.innerText = "WAITING...";
+            
+            // Reset Telemetry display & timers
+            telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
+            telemetryHistory = [];
+            telemetryScrollIndex = 0;
+            if (telemetryScrollTimer) {
+                clearInterval(telemetryScrollTimer);
+                telemetryScrollTimer = null;
+            }
             
             connectBtn.innerText = `Connect ${currentRobot}`;
             
@@ -683,7 +746,6 @@
             'btn-tri': 'tri', 'btn-cross': 'cross', 'btn-sq': 'sq', 'btn-cir': 'cir'
         };
 
-        // Added WASD & Arrow Key support
         const keyMap = {
             'ArrowUp': 'btn-up', 'w': 'btn-up', 'W': 'btn-up',
             'ArrowDown': 'btn-down', 's': 'btn-down', 'S': 'btn-down',
@@ -693,13 +755,12 @@
 
         let tracerDelayLock = false;
 
-        // Unified Press Function
         function handleButtonPress(btn) {
             if (currentRobot === 'TRACER' && tracerDelayLock) {
-                return; // Enforce 0.5 sec delay lock
+                return; 
             }
             if (btn.classList.contains('active')) {
-                return; // Prevent repeated triggers if held down
+                return; 
             }
             
             btn.classList.add('active');
@@ -716,7 +777,6 @@
             }
         }
 
-        // Unified Release Function
         function handleButtonRelease(btn) {
             if (btn.classList.contains('active')) {
                 btn.classList.remove('active');
@@ -724,12 +784,11 @@
             }
         }
 
-        // 1. POINTER EVENTS (Handles Mouse, Touch, & Pen fluidly)
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
             btn.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
-                btn.setPointerCapture(e.pointerId); // Tracks mouse even if dragged outside button
+                btn.setPointerCapture(e.pointerId); 
                 handleButtonPress(btn);
             });
             btn.addEventListener('pointerup', (e) => {
@@ -743,12 +802,10 @@
             });
         });
 
-        // 2. KEYBOARD EVENTS
-        // Note: Click anywhere on the webpage once to give it focus before using keyboard
         window.addEventListener('keydown', (e) => {
             if (keyMap[e.key]) {
-                e.preventDefault(); // Stop window from scrolling
-                if (!e.repeat) { // Ignore held-down key repeating spam
+                e.preventDefault(); 
+                if (!e.repeat) { 
                     const targetBtn = document.getElementById(keyMap[e.key]);
                     if (targetBtn) handleButtonPress(targetBtn);
                 }
@@ -765,7 +822,7 @@
 
 
         // ==========================================
-        // JOYSTICK LOGIC (Upgraded to Pointer Events for Mouse Support)
+        // JOYSTICK LOGIC
         // ==========================================
         let leftDir = "N";
         let rightDir = "N";
@@ -810,13 +867,11 @@
             function handlePointer(e) {
                 e.preventDefault();
                 
-                // On initial press, lock the pointer to this joystick
                 if (e.type === 'pointerdown' && activePointerId === null) {
                     activePointerId = e.pointerId;
                     base.setPointerCapture(e.pointerId);
                 }
                 
-                // Ignore other touches/mice if we're already tracking one
                 if (e.pointerId !== activePointerId) return;
 
                 if (e.type === 'pointerup' || e.type === 'pointercancel') {
@@ -825,7 +880,6 @@
                     return;
                 }
 
-                // Calculate math using direct clientX and clientY (supported natively by pointer events)
                 const rect = base.getBoundingClientRect();
                 const centerX = rect.left + (rect.width / 2);
                 const centerY = rect.top + (rect.height / 2);
