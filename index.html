@@ -71,7 +71,7 @@
         }
 
         #btn-connect {
-            pointer-events: auto;
+            pointer-events: auto; /* Allow clicking */
             background-color: #e67e22;
             color: white;
             border: none;
@@ -234,7 +234,6 @@
             txCharacteristic = null;
         }
 
-        // UPGRADED SEND FUNCTION
         // UPGRADED SEND FUNCTION (Using "#" Delimiter)
         async function sendCommand(cmd) {
             console.log("SENDING:", cmd);
