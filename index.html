@@ -1,185 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#121212">
+// ==========================================
+        // CONTROLLER LOGIC (UPDATED COMMAND NAMES)
+        // ==========================================
+        // We changed 'A' and 'B' to 'ACT_A' and 'ACT_B' to stop 
+        // conflicts with built-in micro:bit button events!
+        const btnCodes = {
+            'btn-up': 'DIR_U', 'btn-down': 'DIR_D', 'btn-left': 'DIR_L', 'btn-right': 'DIR_R',
+            'btn-y': 'ACT_Y', 'btn-a': 'ACT_A', 'btn-x': 'ACT_X', 'btn-b': 'ACT_B'
+        };
 
-    <title>MAKEROBOT PRO Controller</title>
-    <style>
-        /* BASE STYLES */
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #121212;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none; 
-            user-select: none;
-            overflow: hidden;
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-            position: relative; 
-        }
+        const buttonStates = {}; 
 
-        /* PORTRAIT WARNING OVERLAY */
-        #portrait-warning {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #e74c3c;
-            color: white;
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            flex-direction: column;
-            padding: 20px;
-        }
-        @media screen and (orientation: portrait) {
-            #portrait-warning { display: flex; }
-            .app-container { display: none !important; }
-        }
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (!buttonStates[btn.id]) {
+                    buttonStates[btn.id] = true;
+                    btn.classList.add('active');
+                    sendCommand(btnCodes[btn.id] + "_ON");
+                }
+            }, {passive: false});
 
-        /* 3-COLUMN LAYOUT */
-        .app-container {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            height: 100%;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            box-sizing: border-box;
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-        }
-
-        .side-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            align-items: center;
-            height: 100%;
-        }
-
-        .center-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            align-items: center;
-            height: 95%;
-            background-color: #1e1e1e;
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: inset 0px 0px 15px rgba(0,0,0,0.5);
-            border: 2px solid #333;
-            max-width: 300px;
-        }
-
-        /* CENTER PANEL UI */
-        #btn-connect {
-            width: 100%;
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0px 4px 0px #d35400;
-            text-transform: uppercase;
-        }
-        #btn-connect:active {
-            transform: translateY(4px);
-            box-shadow: 0px 0px 0px #d35400;
-        }
-
-        /* LOGO AS FULLSCREEN BUTTON */
-        .main-logo {
-            max-width: 80%;
-            max-height: 90px; 
-            object-fit: contain;
-            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
-            cursor: pointer; 
-            transition: transform 0.1s;
-        }
-        .main-logo:active {
-            transform: scale(0.92); 
-        }
-
-        .telemetry-box {
-            width: 100%;
-            background-color: #000;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 8px 10px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .telemetry-label {
-            color: #888;
-            font-size: 9px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        #readout, #status-text, #telemetry-rx {
-            color: #2ecc71;
-            font-family: monospace;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-        }
-        #status-text { color: #e74c3c; font-size: 13px; }
-        #telemetry-rx { color: #3498db; }
-
-        /* BUTTON CLUSTERS */
-        .button-cluster {
-            display: grid;
-            grid-template-columns: 45px 45px 45px; 
-            grid-template-rows: 45px 45px 45px;
-            gap: 2px; 
-        }
-
-        .btn {
-            background-color: #3455db;
-            border-radius: 50%;
-            border: 2px solid #2c3e50;
-            color: white;
-            font-weight: bold;
-            font-size: 11px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0px 4px 0px #1c2833;
-        }
-        .btn:active, .btn.active {
-            background-color: #2980b9;
-            box-shadow: 0px 0px 0px #1c2833;
-            transform: translateY(4px);
-        }
-
-        .btn-top { grid-column: 2; grid-row: 1; }
-        .btn-left { grid-column: 1; grid-row: 2; }
-        .btn-right { grid-column: 3; grid-row: 2; }
-        .btn-bottom { grid-column: 2; grid-row: 3; }
-
-        /* JOYSTICKS */
-        .joystick-base {
-            width: 160px; 
-            height:
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                if (buttonStates[btn.id]) {
+                    buttonStates[btn.id] = false;
+                    btn.classList.remove('active');
+                    sendCommand(btnCodes[btn.id] + "_OFF");
+                }
+            }, {passive: false});
+            
+            btn.addEventListener('touchcancel', (e) => {
+                if (buttonStates[btn.id]) {
+                    buttonStates[btn.id] = false;
+                    btn.classList.remove('active');
+                    sendCommand(btnCodes[btn.id] + "_OFF");
+                }
+            });
+        });
