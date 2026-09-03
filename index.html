@@ -161,4 +161,216 @@
             border-radius: 50%;
             border: 2px solid #2c3e50;
             color: white;
-            font-weight:
+            font-weight: bold;
+            font-size: 11px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 0px #1c2833;
+        }
+        .btn:active, .btn.active {
+            background-color: #2980b9;
+            box-shadow: 0px 0px 0px #1c2833;
+            transform: translateY(4px);
+        }
+
+        .btn-top { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-right { grid-column: 3; grid-row: 2; }
+        .btn-bottom { grid-column: 2; grid-row: 3; }
+
+        /* JOYSTICKS */
+        .joystick-base {
+            width: 160px; 
+            height: 160px;
+            background-color: #2a2a2a;
+            border-radius: 50%;
+            position: relative;
+            border: 3px solid #444;
+            box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
+        }
+        
+        .joystick-stick {
+            width: 60px; 
+            height: 60px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            position: absolute;
+            top: 50px; 
+            left: 50px;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4), 0px 5px 10px rgba(0,0,0,0.5);
+            pointer-events: none;
+            transition: transform 0.05s linear;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="portrait-warning">
+        <div>🔄</div>
+        <div>Please rotate your phone to Landscape mode</div>
+    </div>
+
+    <div class="app-container">
+        
+        <div class="side-panel">
+            <div class="button-cluster">
+                <div class="btn btn-top" id="btn-up">UP</div>
+                <div class="btn btn-left" id="btn-left">LT</div>
+                <div class="btn btn-right" id="btn-right">RT</div>
+                <div class="btn btn-bottom" id="btn-down">DN</div>
+            </div>
+            <div class="joystick-base" id="joy-left">
+                <div class="joystick-stick" id="stick-left"></div>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <button id="btn-connect">Connect BLITZ</button>
+            
+            <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo" id="logo-fullscreen">
+            
+            <div class="telemetry-box">
+                <div class="telemetry-label">Status</div>
+                <div id="status-text">OFFLINE</div>
+                <div class="telemetry-label" style="margin-top: 4px;">Sent Cmd</div>
+                <div id="readout">M_N</div>
+                <div class="telemetry-label" style="margin-top: 4px;">BLITZ DATA</div>
+                <div id="telemetry-rx">WAITING...</div>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="button-cluster">
+                <div class="btn btn-top" id="btn-y">Y</div>
+                <div class="btn btn-left" id="btn-x">X</div>
+                <div class="btn btn-right" id="btn-b">B</div>
+                <div class="btn btn-bottom" id="btn-a">A</div>
+            </div>
+            <div class="joystick-base" id="joy-right">
+                <div class="joystick-stick" id="stick-right"></div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // FULLSCREEN TOGGLE VIA LOGO
+        const logoFullscreen = document.getElementById('logo-fullscreen');
+        logoFullscreen.addEventListener('click', () => {
+            let docElm = document.documentElement;
+            let isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+
+            if (!isFullscreen) {
+                if (docElm.requestFullscreen) { docElm.requestFullscreen(); } 
+                else if (docElm.mozRequestFullScreen) { docElm.mozRequestFullScreen(); } 
+                else if (docElm.webkitRequestFullScreen) { docElm.webkitRequestFullScreen(); } 
+                else if (docElm.msRequestFullscreen) { docElm.msRequestFullscreen(); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); } 
+                else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); } 
+                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
+                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            }
+        });
+
+        // ==========================================
+        // WEB BLUETOOTH API (BIDIRECTIONAL)
+        // ==========================================
+        let bleDevice;
+        let bleServer;
+        let uartService;
+        let rxCharacteristic; 
+        let txCharacteristic; 
+
+        const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+        const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+        const connectBtn = document.getElementById('btn-connect');
+        const readout = document.getElementById('readout');
+        const statusText = document.getElementById('status-text');
+        const telemetryRx = document.getElementById('telemetry-rx');
+
+        connectBtn.addEventListener('click', async () => {
+            try {
+                statusText.innerText = "SCANNING...";
+                statusText.style.color = "#f39c12"; 
+                
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'BBC micro:bit' }],
+                    optionalServices: [UART_SERVICE_UUID]
+                });
+
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+                statusText.innerText = "CONNECTING...";
+                bleServer = await bleDevice.gatt.connect();
+                uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
+                
+                rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
+
+                txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
+                await txCharacteristic.startNotifications();
+                txCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingTelemetry);
+
+                statusText.innerText = "CONNECTED";
+                statusText.style.color = "#2ecc71"; 
+                telemetryRx.innerText = "READY";
+                connectBtn.innerText = "DISCONNECT";
+                connectBtn.style.backgroundColor = "#27ae60";
+                connectBtn.style.boxShadow = "0px 4px 0px #1e8449";
+
+            } catch (error) {
+                console.error('Bluetooth Error:', error);
+                statusText.innerText = "FAILED";
+                statusText.style.color = "#e74c3c";
+            }
+        });
+
+        function handleIncomingTelemetry(event) {
+            let value = event.target.value;
+            let decoder = new TextDecoder('utf-8');
+            let receivedString = decoder.decode(value).trim();
+            receivedString = receivedString.replace("#", "");
+
+            console.log("BLITZ DATA RECEIVED:", receivedString);
+            telemetryRx.innerText = receivedString;
+        }
+
+        function onDisconnected() {
+            statusText.innerText = "OFFLINE";
+            statusText.style.color = "#e74c3c"; 
+            telemetryRx.innerText = "WAITING...";
+            connectBtn.innerText = "Connect BLITZ";
+            connectBtn.style.backgroundColor = "#e67e22";
+            connectBtn.style.boxShadow = "0px 4px 0px #d35400";
+            rxCharacteristic = null;
+            txCharacteristic = null;
+        }
+
+        async function sendCommand(cmd) {
+            readout.innerText = cmd;
+
+            if (!rxCharacteristic) return; 
+
+            try {
+                let encoder = new TextEncoder();
+                let data = encoder.encode(cmd + "#");
+                
+                if (rxCharacteristic.properties.writeWithoutResponse) {
+                    await rxCharacteristic.writeValueWithoutResponse(data);
+                } else {
+                    await rxCharacteristic.writeValue(data);
+                }
+            } catch (error) {
+                console.error('Send Error:', error);
+            }
+        }
+
+        // ==========================================
+        // CONTROLLER LOGIC (SAFE PROTOCOL)
+        // ==========================================
+        const btnCodes = {
+            'btn-up': 'DIR_U', 'btn-down': 'DIR_D', 'btn-left': 'DIR_L', 'btn-right': 'DIR_R',
+            'btn-y': 'ACT_Y', 'btn-a': 'ACT_A', 'btn-x': 'ACT_X', 'btn-b': '
