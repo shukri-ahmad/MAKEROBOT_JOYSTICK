@@ -8,11 +8,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#121212">
+    <meta name="theme-color" content="#121212" id="meta-theme-color">
 
     <title>MAKEROBOT PRO Controller</title>
     <style>
-        /* BASE STYLES */
+        /* ==========================================
+           BASE STYLES (DARK THEME DEFAULT)
+           ========================================== */
         body {
             margin: 0;
             padding: 0;
@@ -27,6 +29,7 @@
             height: 100vh;
             width: 100vw;
             position: relative; 
+            transition: all 0.3s ease;
         }
 
         /* PORTRAIT WARNING OVERLAY */
@@ -71,8 +74,8 @@
             justify-content: space-evenly;
             align-items: center;
             height: 100%;
-            /* Keep width stable even when children are hidden */
             min-width: 160px; 
+            position: relative;
         }
 
         .center-panel {
@@ -88,6 +91,7 @@
             box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5);
             border: 2px solid #2a2a2a;
             max-width: 300px;
+            transition: all 0.3s ease;
         }
 
         /* ROBOT SELECTOR TOGGLE */
@@ -100,6 +104,7 @@
             width: 100%;
             box-sizing: border-box;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
         }
         .mode-btn {
             flex: 1;
@@ -155,13 +160,12 @@
                         inset 0 -4px 10px rgba(0,0,0,0.6), 
                         inset 0 3px 5px rgba(255,255,255,0.3);
             cursor: pointer;
-            transition: all 0.1s ease;
+            transition: all 0.3s ease;
         }
         .main-logo:active {
             transform: scale(0.92);
             border-color: #555;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.9), 
-                        inset 0 6px 12px rgba(0,0,0,0.9);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.9), inset 0 6px 12px rgba(0,0,0,0.9);
         }
 
         .telemetry-box {
@@ -176,6 +180,7 @@
             align-items: center;
             gap: 2px;
             box-shadow: inset 0 2px 10px rgba(0,0,0,1);
+            transition: all 0.3s ease;
         }
 
         .telemetry-label {
@@ -183,6 +188,7 @@
             font-size: 9px;
             letter-spacing: 2px;
             text-transform: uppercase;
+            transition: color 0.3s ease;
         }
 
         #readout, #status-text, #telemetry-rx {
@@ -201,7 +207,7 @@
             grid-template-columns: 50px 50px 50px; 
             grid-template-rows: 50px 50px 50px;
             gap: 4px; 
-            transition: opacity 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         /* COMMON BUTTON POSITIONING */
@@ -210,7 +216,7 @@
         .btn-right { grid-column: 3; grid-row: 2; }
         .btn-bottom { grid-column: 2; grid-row: 3; }
 
-        /* D-PAD STYLING (LEFT SIDE) */
+        /* D-PAD STYLING */
         .btn-dpad {
             background: linear-gradient(145deg, #3a3a3a, #222);
             border-radius: 8px;
@@ -222,6 +228,7 @@
             align-items: center;
             box-shadow: 0px 4px 0px #0a0a0a, inset 0 2px 2px rgba(255,255,255,0.05);
             cursor: pointer;
+            transition: all 0.1s ease;
         }
         .btn-dpad:active, .btn-dpad.active {
             background: #222;
@@ -230,7 +237,15 @@
             color: #fff;
         }
 
-        /* ACTION BUTTON STYLING (RIGHT SIDE) */
+        /* ENLARGED D-PAD FOR TRACER MODE */
+        .large-dpad {
+            grid-template-columns: 75px 75px 75px !important;
+            grid-template-rows: 75px 75px 75px !important;
+            gap: 6px !important;
+        }
+        .large-dpad .btn-dpad { font-size: 26px; border-radius: 12px; }
+
+        /* ACTION BUTTON STYLING */
         .btn-action {
             background: linear-gradient(145deg, #333, #1a1a1a);
             border-radius: 50%;
@@ -247,7 +262,6 @@
             transform: translateY(5px);
         }
 
-        /* PLAYSTATION BUTTON COLORS */
         #btn-tri { color: #10eb71; font-size: 20px; } 
         #btn-cir { color: #f2355b; font-size: 22px; } 
         #btn-cross { color: #5976eb; font-size: 20px; } 
@@ -255,37 +269,125 @@
 
         /* JOYSTICKS */
         .joystick-base {
-            width: 160px; 
-            height: 160px;
+            width: 160px; height: 160px;
             background-color: #151515;
-            border-radius: 50%;
-            position: relative;
+            border-radius: 50%; position: relative;
             border: 2px solid #2a2a2a;
             box-shadow: inset 0px 0px 25px rgba(0,0,0,0.9), 0 5px 15px rgba(0,0,0,0.5);
             transition: opacity 0.3s ease;
         }
-        
         .joystick-stick {
-            width: 60px; 
-            height: 60px;
+            width: 60px; height: 60px;
             background: radial-gradient(circle at center, #444 30%, #1a1a1a 90%);
-            border-radius: 50%;
-            position: absolute;
-            top: 50px; 
-            left: 50px;
+            border-radius: 50%; position: absolute;
+            top: 50px; left: 50px;
             border: 2px solid #111;
             box-shadow: 0px 8px 15px rgba(0,0,0,0.6), inset 0px 2px 5px rgba(255,255,255,0.15);
-            pointer-events: none;
-            transition: transform 0.05s linear;
+            pointer-events: none; transition: transform 0.05s linear;
         }
         .joystick-stick::after {
-            content: '';
-            position: absolute;
+            content: ''; position: absolute;
             top: 5px; left: 5px; right: 5px; bottom: 5px;
-            border-radius: 50%;
-            border: 2px solid #222;
+            border-radius: 50%; border: 2px solid #222;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
+
+        /* TERMINAL (RIGHT SIDE - TRACER MODE ONLY) */
+        .terminal-container {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            width: 90%;
+            height: 85%;
+            background: #111;
+            border-radius: 12px;
+            border: 2px solid #333;
+            padding: 10px;
+            box-sizing: border-box;
+            box-shadow: inset 0px 0px 10px rgba(0,0,0,0.8);
+        }
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            color: #2ecc71;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        .terminal-line { margin: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px;}
+        .terminal-time { color: #888; font-size: 10px; margin-right: 5px; }
+        
+        .btn-clear {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #c0392b;
+        }
+        .btn-clear:active { transform: translateY(2px); box-shadow: 0 0 0 #c0392b; }
+
+        /* ==========================================
+           TRACER LIGHT THEME OVERRIDES
+           ========================================== */
+        body.tracer-theme {
+            background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #dcdcdc 100%);
+            color: #121212;
+        }
+        body.tracer-theme .center-panel {
+            background-color: #f5f5f5;
+            border-color: #ddd;
+            box-shadow: inset 0px 0px 15px rgba(0,0,0,0.05), 0 10px 30px rgba(0,0,0,0.1);
+        }
+        body.tracer-theme .telemetry-box {
+            background-color: #fff;
+            border-color: #ccc;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        body.tracer-theme .telemetry-label { color: #999; }
+        body.tracer-theme .robot-selector { background: #e0e0e0; border-color: #d0d0d0; }
+        body.tracer-theme .mode-btn { color: #888; }
+        body.tracer-theme .mode-btn.active {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            color: #111; border-color: #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        body.tracer-theme #btn-connect {
+            background: linear-gradient(145deg, #eee, #ddd);
+            color: #333; border-color: #ccc; box-shadow: 0px 4px 0px #bbb;
+        }
+        body.tracer-theme #btn-connect:active {
+            background: linear-gradient(145deg, #ddd, #ccc); box-shadow: 0px 0px 0px #bbb;
+        }
+        body.tracer-theme .main-logo {
+            background: radial-gradient(circle at 35% 35%, #ffffff, #c0c0c0);
+            border-color: #aaa; box-shadow: 0 8px 15px rgba(0,0,0,0.2), inset 0 -4px 10px rgba(0,0,0,0.1);
+        }
+        body.tracer-theme .btn-dpad {
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-color: #ccc; color: #555;
+            box-shadow: 0px 5px 0px #bbb, inset 0 2px 2px rgba(255,255,255,1);
+        }
+        body.tracer-theme .btn-dpad:active, body.tracer-theme .btn-dpad.active {
+            background: #e6e6e6; color: #111;
+            box-shadow: 0px 0px 0px #bbb, inset 0 4px 8px rgba(0,0,0,0.1);
+        }
+        body.tracer-theme .terminal-container { background: #fff; border-color: #ccc; box-shadow: inset 0px 0px 10px rgba(0,0,0,0.05); }
+        body.tracer-theme .terminal-output { color: #27ae60; }
+        body.tracer-theme .terminal-line { border-bottom: 1px solid #eee; }
+        body.tracer-theme .terminal-time { color: #aaa; }
     </style>
 </head>
 <body>
@@ -312,8 +414,6 @@
 
         <!-- CENTER SIDE -->
         <div class="center-panel">
-            
-            <!-- NEW: ROBOT MODE SELECTOR -->
             <div class="robot-selector">
                 <div class="mode-btn active" id="mode-blitz">BLITZ</div>
                 <div class="mode-btn" id="mode-tracer">TRACER</div>
@@ -333,8 +433,10 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDE (ACTION BUTTONS & Right Joystick) -->
+        <!-- RIGHT SIDE (ACTION BUTTONS, Right Joystick & Terminal) -->
         <div class="side-panel">
+            
+            <!-- BLITZ UI -->
             <div class="button-cluster" id="right-action-cluster">
                 <div class="btn btn-action btn-top" id="btn-tri">▲</div>
                 <div class="btn btn-action btn-left" id="btn-sq">■</div>
@@ -344,36 +446,58 @@
             <div class="joystick-base" id="joy-right">
                 <div class="joystick-stick" id="stick-right"></div>
             </div>
+
+            <!-- TRACER UI (TERMINAL) -->
+            <div class="terminal-container" id="terminal-container">
+                <div class="terminal-header">
+                    <span>Input History</span>
+                    <button class="btn-clear" id="btn-clear">CLEAR</button>
+                </div>
+                <div class="terminal-output" id="terminal-output">
+                    <!-- Logs go here -->
+                </div>
+            </div>
+
         </div>
         
     </div>
 
     <script>
         // ==========================================
-        // ROBOT MODE SELECTOR LOGIC
+        // ROBOT MODE SELECTOR LOGIC & THEME ENGINE
         // ==========================================
         const modeBlitz = document.getElementById('mode-blitz');
         const modeTracer = document.getElementById('mode-tracer');
         
         const joyLeft = document.getElementById('joy-left');
         const joyRight = document.getElementById('joy-right');
+        const leftDpadCluster = document.getElementById('left-dpad-cluster');
         const rightActionCluster = document.getElementById('right-action-cluster');
+        const terminalContainer = document.getElementById('terminal-container');
         
         const connectBtn = document.getElementById('btn-connect');
         const rxLabel = document.getElementById('rx-label');
+        const metaThemeColor = document.getElementById('meta-theme-color');
         
         let currentRobot = 'BLITZ';
 
         function setRobotMode(mode) {
             currentRobot = mode;
             if (mode === 'BLITZ') {
+                // UI Toggle
                 modeBlitz.classList.add('active');
                 modeTracer.classList.remove('active');
+                document.body.classList.remove('tracer-theme');
+                metaThemeColor.setAttribute('content', '#121212');
                 
-                // Show full UI
+                // Reset D-Pad Size
+                leftDpadCluster.classList.remove('large-dpad');
+
+                // Show BLITZ specific UI
                 joyLeft.style.display = 'block';
                 joyRight.style.display = 'block';
                 rightActionCluster.style.display = 'grid';
+                terminalContainer.style.display = 'none'; // Hide terminal
                 
                 // Update Text
                 rxLabel.innerText = 'BLITZ DATA';
@@ -381,13 +505,20 @@
                     connectBtn.innerText = 'Connect BLITZ';
                 }
             } else {
+                // UI Toggle
                 modeTracer.classList.add('active');
                 modeBlitz.classList.remove('active');
+                document.body.classList.add('tracer-theme'); // Triggers White Theme
+                metaThemeColor.setAttribute('content', '#ffffff');
                 
-                // Hide joysticks and right action buttons for TRACER
+                // Enlarge D-Pad
+                leftDpadCluster.classList.add('large-dpad');
+
+                // Show TRACER specific UI
                 joyLeft.style.display = 'none';
                 joyRight.style.display = 'none';
                 rightActionCluster.style.display = 'none';
+                terminalContainer.style.display = 'flex'; // Show terminal
                 
                 // Update Text
                 rxLabel.innerText = 'TRACER DATA';
@@ -399,6 +530,32 @@
 
         modeBlitz.addEventListener('click', () => setRobotMode('BLITZ'));
         modeTracer.addEventListener('click', () => setRobotMode('TRACER'));
+
+        // ==========================================
+        // TERMINAL LOGIC
+        // ==========================================
+        const terminalOutput = document.getElementById('terminal-output');
+        const btnClear = document.getElementById('btn-clear');
+
+        function logToTerminal(cmd) {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                            now.getMinutes().toString().padStart(2, '0') + ':' + 
+                            now.getSeconds().toString().padStart(2, '0');
+                            
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-time">[${timeStr}]</span> > ${cmd}`;
+            
+            terminalOutput.appendChild(line);
+            
+            // Auto scroll to bottom
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        btnClear.addEventListener('click', () => {
+            terminalOutput.innerHTML = '';
+        });
 
         // ==========================================
         // FULLSCREEN TOGGLE VIA LOGO
@@ -439,9 +596,7 @@
         const telemetryRx = document.getElementById('telemetry-rx');
 
         connectBtn.addEventListener('click', async () => {
-            if (rxCharacteristic) { // If already connected, disconnect logic could go here
-                return;
-            }
+            if (rxCharacteristic) return; // Ignore if already connected
 
             try {
                 statusText.innerText = "SCANNING...";
@@ -485,6 +640,11 @@
             let receivedString = decoder.decode(value).trim();
             receivedString = receivedString.replace("#", "");
             telemetryRx.innerText = receivedString;
+            
+            // Log incoming data to terminal if in TRACER mode
+            if(currentRobot === 'TRACER') {
+                logToTerminal(`RX: ${receivedString}`);
+            }
         }
 
         function onDisconnected() {
@@ -493,9 +653,17 @@
             telemetryRx.innerText = "WAITING...";
             
             connectBtn.innerText = `Connect ${currentRobot}`;
-            connectBtn.style.background = "linear-gradient(145deg, #333, #222)";
-            connectBtn.style.borderColor = "#444";
-            connectBtn.style.boxShadow = "0px 4px 0px #111";
+            
+            // Reset connect button styling based on theme
+            if(currentRobot === 'TRACER') {
+                connectBtn.style.background = "linear-gradient(145deg, #eee, #ddd)";
+                connectBtn.style.borderColor = "#ccc";
+                connectBtn.style.boxShadow = "0px 4px 0px #bbb";
+            } else {
+                connectBtn.style.background = "linear-gradient(145deg, #333, #222)";
+                connectBtn.style.borderColor = "#444";
+                connectBtn.style.boxShadow = "0px 4px 0px #111";
+            }
             
             rxCharacteristic = null;
             txCharacteristic = null;
@@ -503,6 +671,9 @@
 
         async function sendCommand(cmd) {
             readout.innerText = cmd;
+            
+            // Log outgoing data to terminal
+            logToTerminal(`TX: ${cmd}`);
 
             if (!rxCharacteristic) return; 
 
@@ -517,6 +688,7 @@
                 }
             } catch (error) {
                 console.error('Send Error:', error);
+                logToTerminal(`ERR: Failed to send`);
             }
         }
 
