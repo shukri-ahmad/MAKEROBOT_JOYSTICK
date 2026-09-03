@@ -3,289 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#121212">
-
-    <title>MAKEROBOT PRO Controller</title>
+    <title>MAKEROBOT Controller</title>
     <style>
-        /* BASE STYLES */
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #121212;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none; 
-            user-select: none;
-            overflow: hidden;
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-            position: relative; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+        body { background: #121212; color: white; font-family: sans-serif; touch-action: none; overflow: hidden; height: 100vh; width: 100vw; }
+        
+        #portrait-warning { display: none; position: fixed; inset: 0; background: #e74c3c; z-index: 9999; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; text-align: center; }
+        @media screen and (orientation: portrait) { #portrait-warning { display: flex; } .app { display: none !important; } }
 
-        /* PORTRAIT WARNING OVERLAY */
-        #portrait-warning {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #e74c3c;
-            color: white;
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            flex-direction: column;
-            padding: 20px;
-        }
-        @media screen and (orientation: portrait) {
-            #portrait-warning { display: flex; }
-            .app-container { display: none !important; }
-        }
+        .app { display: flex; width: 100%; height: 100%; padding: 10px; }
+        .side { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
+        .center { flex: 1; max-width: 280px; background: #1e1e1e; border: 2px solid #333; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
 
-        /* 3-COLUMN LAYOUT */
-        .app-container {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            height: 100%;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            box-sizing: border-box;
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-        }
+        #btn-connect { width: 100%; background: #e67e22; color: white; border: none; padding: 10px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        
+        .logo-svg { width: 140px; height: auto; cursor: pointer; }
+        .logo-svg:active { transform: scale(0.95); }
 
-        .side-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            align-items: center;
-            height: 100%;
-        }
-
-        .center-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            align-items: center;
-            height: 95%;
-            background-color: #1e1e1e;
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: inset 0px 0px 15px rgba(0,0,0,0.5);
-            border: 2px solid #333;
-            max-width: 300px;
-        }
-
-        /* CENTER PANEL UI */
-        #btn-connect {
-            width: 100%;
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0px 4px 0px #d35400;
-            text-transform: uppercase;
-        }
-        #btn-connect:active {
-            transform: translateY(4px);
-            box-shadow: 0px 0px 0px #d35400;
-        }
-
-        /* LOGO AS FULLSCREEN BUTTON */
-        .main-logo {
-            max-width: 80%;
-            max-height: 90px; 
-            object-fit: contain;
-            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
-            cursor: pointer; 
-            transition: transform 0.1s;
-        }
-        .main-logo:active {
-            transform: scale(0.92); 
-        }
-
-        .telemetry-box {
-            width: 100%;
-            background-color: #000;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 8px 10px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .telemetry-label {
-            color: #888;
-            font-size: 9px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        #readout, #status-text, #telemetry-rx {
-            color: #2ecc71;
-            font-family: monospace;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-        }
-        #status-text { color: #e74c3c; font-size: 13px; }
+        .telemetry { width: 100%; background: #000; border: 1px solid #333; border-radius: 6px; padding: 6px; text-align: center; }
+        .label { color: #888; font-size: 9px; text-transform: uppercase; margin-top: 2px; }
+        .val { font-family: monospace; font-size: 14px; font-weight: bold; }
+        #status-text { color: #e74c3c; }
+        #readout { color: #2ecc71; }
         #telemetry-rx { color: #3498db; }
 
-        /* BUTTON CLUSTERS */
-        .button-cluster {
-            display: grid;
-            grid-template-columns: 45px 45px 45px; 
-            grid-template-rows: 45px 45px 45px;
-            gap: 2px; 
-        }
+        .btn-grid { display: grid; grid-template-columns: repeat(3, 45px); grid-template-rows: repeat(3, 45px); gap: 2px; }
+        .btn { background: #3455db; border-radius: 50%; border: 2px solid #2c3e50; color: white; font-weight: bold; font-size: 11px; display: flex; justify-content: center; align-items: center; }
+        .btn:active, .btn.active { background: #2980b9; transform: translateY(2px); }
+        .b-top { grid-area: 1 / 2; } .b-left { grid-area: 2 / 1; } .b-right { grid-area: 2 / 3; } .b-bot { grid-area: 3 / 2; }
 
-        .btn {
-            background-color: #3455db;
-            border-radius: 50%;
-            border: 2px solid #2c3e50;
-            color: white;
-            font-weight: bold;
-            font-size: 11px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0px 4px 0px #1c2833;
-        }
-        .btn:active, .btn.active {
-            background-color: #2980b9;
-            box-shadow: 0px 0px 0px #1c2833;
-            transform: translateY(4px);
-        }
-
-        .btn-top { grid-column: 2; grid-row: 1; }
-        .btn-left { grid-column: 1; grid-row: 2; }
-        .btn-right { grid-column: 3; grid-row: 2; }
-        .btn-bottom { grid-column: 2; grid-row: 3; }
-
-        /* JOYSTICKS */
-        .joystick-base {
-            width: 160px; 
-            height: 160px;
-            background-color: #2a2a2a;
-            border-radius: 50%;
-            position: relative;
-            border: 3px solid #444;
-            box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
-        }
-        
-        .joystick-stick {
-            width: 60px; 
-            height: 60px;
-            background-color: #e74c3c;
-            border-radius: 50%;
-            position: absolute;
-            top: 50px; 
-            left: 50px;
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4), 0px 5px 10px rgba(0,0,0,0.5);
-            pointer-events: none;
-            transition: transform 0.05s linear;
-        }
+        .joy-base { width: 150px; height: 150px; background: #2a2a2a; border-radius: 50%; position: relative; border: 3px solid #444; }
+        .joy-stick { width: 50px; height: 50px; background: #e74c3c; border-radius: 50%; position: absolute; top: 47px; left: 47px; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <div id="portrait-warning">
-        <div>🔄</div>
-        <div>Please rotate your phone to Landscape mode</div>
-    </div>
+    <div id="portrait-warning">🔄 Please rotate phone to Landscape</div>
 
-    <div class="app-container">
-        
-        <div class="side-panel">
-            <div class="button-cluster">
-                <div class="btn btn-top" id="btn-up">UP</div>
-                <div class="btn btn-left" id="btn-left">LT</div>
-                <div class="btn btn-right" id="btn-right">RT</div>
-                <div class="btn btn-bottom" id="btn-down">DN</div>
+    <div class="app">
+        <div class="side">
+            <div class="btn-grid">
+                <div class="btn b-top" id="btn-up">UP</div>
+                <div class="btn b-left" id="btn-left">LT</div>
+                <div class="btn b-right" id="btn-right">RT</div>
+                <div class="btn b-bot" id="btn-down">DN</div>
             </div>
-            <div class="joystick-base" id="joy-left">
-                <div class="joystick-stick" id="stick-left"></div>
-            </div>
+            <div class="joy-base" id="joy-left"><div class="joy-stick" id="stick-left"></div></div>
         </div>
 
-        <div class="center-panel">
-            <button id="btn-connect">Connect BLITZ</button>
+        <div class="center">
+            <button id="btn-connect">CONNECT BLITZ</button>
             
-            <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo" id="logo-fullscreen">
-            
-            <div class="telemetry-box">
-                <div class="telemetry-label">Status</div>
-                <div id="status-text">OFFLINE</div>
-                <div class="telemetry-label" style="margin-top: 4px;">Sent Cmd</div>
-                <div id="readout">M_N</div>
-                <div class="telemetry-label" style="margin-top: 4px;">BLITZ DATA</div>
-                <div id="telemetry-rx">WAITING...</div>
+            <svg class="logo-svg" id="logo-fullscreen" viewBox="0 0 200 50">
+                <rect width="200" height="50" rx="8" fill="#2c3e50"/>
+                <text x="100" y="32" fill="#ffffff" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle">MAKEROBOT</text>
+            </svg>
+
+            <div class="telemetry">
+                <div class="label">Status</div>
+                <div class="val" id="status-text">OFFLINE</div>
+                <div class="label">Sent Cmd</div>
+                <div class="val" id="readout">M_N</div>
+                <div class="label">BLITZ DATA</div>
+                <div class="val" id="telemetry-rx">WAITING...</div>
             </div>
         </div>
 
-        <div class="side-panel">
-            <div class="button-cluster">
-                <div class="btn btn-top" id="btn-y">Y</div>
-                <div class="btn btn-left" id="btn-x">X</div>
-                <div class="btn btn-right" id="btn-b">B</div>
-                <div class="btn btn-bottom" id="btn-a">A</div>
+        <div class="side">
+            <div class="btn-grid">
+                <div class="btn b-top" id="btn-y">Y</div>
+                <div class="btn b-left" id="btn-x">X</div>
+                <div class="btn b-right" id="btn-b">B</div>
+                <div class="btn b-bot" id="btn-a">A</div>
             </div>
-            <div class="joystick-base" id="joy-right">
-                <div class="joystick-stick" id="stick-right"></div>
-            </div>
+            <div class="joy-base" id="joy-right"><div class="joy-stick" id="stick-right"></div></div>
         </div>
-        
     </div>
 
     <script>
-        // FULLSCREEN TOGGLE VIA LOGO
-        const logoFullscreen = document.getElementById('logo-fullscreen');
-        logoFullscreen.addEventListener('click', () => {
-            let docElm = document.documentElement;
-            let isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-
-            if (!isFullscreen) {
-                if (docElm.requestFullscreen) { docElm.requestFullscreen(); } 
-                else if (docElm.mozRequestFullScreen) { docElm.mozRequestFullScreen(); } 
-                else if (docElm.webkitRequestFullScreen) { docElm.webkitRequestFullScreen(); } 
-                else if (docElm.msRequestFullscreen) { docElm.msRequestFullscreen(); }
+        // FULLSCREEN VIA LOGO TAP
+        document.getElementById('logo-fullscreen').addEventListener('click', () => {
+            let d = document.documentElement;
+            if (!document.fullscreenElement) {
+                (d.requestFullscreen || d.webkitRequestFullScreen || d.mozRequestFullScreen) .call(d);
             } else {
-                if (document.exitFullscreen) { document.exitFullscreen(); } 
-                else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); } 
-                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
-                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+                (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
             }
         });
 
-        // ==========================================
-        // WEB BLUETOOTH API (BIDIRECTIONAL)
-        // ==========================================
-        let bleDevice;
-        let bleServer;
-        let uartService;
-        let rxCharacteristic; 
-        let txCharacteristic; 
-
-        const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-        const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-        const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+        // BLUETOOTH
+        let bleDevice, bleServer, uartService, rxChar, txChar;
+        const UUID_SVC = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const UUID_TX  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+        const UUID_RX  = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
         const connectBtn = document.getElementById('btn-connect');
         const readout = document.getElementById('readout');
@@ -296,90 +106,61 @@
             try {
                 statusText.innerText = "SCANNING...";
                 statusText.style.color = "#f39c12"; 
-                
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'BBC micro:bit' }],
-                    optionalServices: [UART_SERVICE_UUID]
+                    optionalServices: [UUID_SVC]
                 });
-
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
-
                 statusText.innerText = "CONNECTING...";
                 bleServer = await bleDevice.gatt.connect();
-                uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
-                
-                rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
-
-                txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
-                await txCharacteristic.startNotifications();
-                txCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingTelemetry);
-
+                uartService = await bleServer.getPrimaryService(UUID_SVC);
+                rxChar = await uartService.getCharacteristic(UUID_RX);
+                txChar = await uartService.getCharacteristic(UUID_TX);
+                await txChar.startNotifications();
+                txChar.addEventListener('characteristicvaluechanged', (e) => {
+                    let str = new TextDecoder().decode(e.target.value).trim().replace("#", "");
+                    telemetryRx.innerText = str;
+                });
                 statusText.innerText = "CONNECTED";
                 statusText.style.color = "#2ecc71"; 
                 telemetryRx.innerText = "READY";
                 connectBtn.innerText = "DISCONNECT";
-                connectBtn.style.backgroundColor = "#27ae60";
-                connectBtn.style.boxShadow = "0px 4px 0px #1e8449";
-
-            } catch (error) {
-                console.error('Bluetooth Error:', error);
+                connectBtn.style.background = "#27ae60";
+            } catch (err) {
                 statusText.innerText = "FAILED";
                 statusText.style.color = "#e74c3c";
             }
         });
 
-        function handleIncomingTelemetry(event) {
-            let value = event.target.value;
-            let decoder = new TextDecoder('utf-8');
-            let receivedString = decoder.decode(value).trim();
-            receivedString = receivedString.replace("#", "");
-
-            console.log("BLITZ DATA RECEIVED:", receivedString);
-            telemetryRx.innerText = receivedString;
-        }
-
         function onDisconnected() {
             statusText.innerText = "OFFLINE";
             statusText.style.color = "#e74c3c"; 
             telemetryRx.innerText = "WAITING...";
-            connectBtn.innerText = "Connect BLITZ";
-            connectBtn.style.backgroundColor = "#e67e22";
-            connectBtn.style.boxShadow = "0px 4px 0px #d35400";
-            rxCharacteristic = null;
-            txCharacteristic = null;
+            connectBtn.innerText = "CONNECT BLITZ";
+            connectBtn.style.background = "#e67e22";
+            rxChar = null; txChar = null;
         }
 
         async function sendCommand(cmd) {
             readout.innerText = cmd;
-
-            if (!rxCharacteristic) return; 
-
+            if (!rxChar) return;
             try {
-                let encoder = new TextEncoder();
-                let data = encoder.encode(cmd + "#");
-                
-                if (rxCharacteristic.properties.writeWithoutResponse) {
-                    await rxCharacteristic.writeValueWithoutResponse(data);
+                let data = new TextEncoder().encode(cmd + "#");
+                if (rxChar.properties.writeWithoutResponse) {
+                    await rxChar.writeValueWithoutResponse(data);
                 } else {
-                    await rxCharacteristic.writeValue(data);
+                    await rxChar.writeValue(data);
                 }
-            } catch (error) {
-                console.error('Send Error:', error);
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // ==========================================
-        // CONTROLLER LOGIC (SAFE PROTOCOL)
-        // ==========================================
+        // BUTTONS
         const btnCodes = {
             'btn-up': 'DIR_U', 'btn-down': 'DIR_D', 'btn-left': 'DIR_L', 'btn-right': 'DIR_R',
             'btn-y': 'ACT_Y', 'btn-a': 'ACT_A', 'btn-x': 'ACT_X', 'btn-b': 'ACT_B'
         };
-
-        const buttonStates = {}; 
-
-        const buttons = document.querySelectorAll('.btn');
-        buttons.forEach(btn => {
+        const buttonStates = {};
+        document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 if (!buttonStates[btn.id]) {
@@ -388,7 +169,6 @@
                     sendCommand(btnCodes[btn.id] + "_ON");
                 }
             }, {passive: false});
-
             btn.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 if (buttonStates[btn.id]) {
@@ -397,124 +177,68 @@
                     sendCommand(btnCodes[btn.id] + "_OFF");
                 }
             }, {passive: false});
-            
-            btn.addEventListener('touchcancel', (e) => {
-                if (buttonStates[btn.id]) {
-                    buttonStates[btn.id] = false;
-                    btn.classList.remove('active');
-                    sendCommand(btnCodes[btn.id] + "_OFF");
-                }
-            });
         });
 
-        let leftDir = "N";
-        let rightDir = "N";
-        let currentMoveCmd = "M_N"; 
-
+        // JOYSTICKS
+        let leftDir = "N", rightDir = "N", currentMoveCmd = "M_N";
         function updateMovement() {
-            let newMoveCmd = "M_N"; 
-
-            if (leftDir === "U" && rightDir === "N") newMoveCmd = "M_U";
-            else if (leftDir === "D" && rightDir === "N") newMoveCmd = "M_D";
-            else if (leftDir === "N" && rightDir === "L") newMoveCmd = "M_L";
-            else if (leftDir === "N" && rightDir === "R") newMoveCmd = "M_R";
-            else if (leftDir === "U" && rightDir === "L") newMoveCmd = "M_UL";
-            else if (leftDir === "U" && rightDir === "R") newMoveCmd = "M_UR";
-            else if (leftDir === "D" && rightDir === "L") newMoveCmd = "M_DL";
-            else if (leftDir === "D" && rightDir === "R") newMoveCmd = "M_DR";
-
-            if (newMoveCmd !== currentMoveCmd) {
-                currentMoveCmd = newMoveCmd;
-                sendCommand(currentMoveCmd);
-            }
+            let n = "M_N";
+            if (leftDir === "U" && rightDir === "N") n = "M_U";
+            else if (leftDir === "D" && rightDir === "N") n = "M_D";
+            else if (leftDir === "N" && rightDir === "L") n = "M_L";
+            else if (leftDir === "N" && rightDir === "R") n = "M_R";
+            else if (leftDir === "U" && rightDir === "L") n = "M_UL";
+            else if (leftDir === "U" && rightDir === "R") n = "M_UR";
+            else if (leftDir === "D" && rightDir === "L") n = "M_DL";
+            else if (leftDir === "D" && rightDir === "R") n = "M_DR";
+            if (n !== currentMoveCmd) { currentMoveCmd = n; sendCommand(currentMoveCmd); }
         }
 
         function setupJoystick(baseId, stickId, side) {
             const base = document.getElementById(baseId);
             const stick = document.getElementById(stickId);
-            
-            const maxRadius = 50; 
-            const deadzone = 15;  
-
             let activeTouchId = null;
-
-            function resetStick() {
-                stick.style.transform = `translate(0px, 0px)`;
-                activeTouchId = null;
-                
-                if (side === 'L') leftDir = "N";
-                if (side === 'R') rightDir = "N";
-                updateMovement();
-            }
 
             function handleTouch(e) {
                 e.preventDefault();
-                
                 let touch = null;
                 for (let i = 0; i < e.changedTouches.length; i++) {
-                    if (e.type === 'touchstart' && activeTouchId === null) {
-                        activeTouchId = e.changedTouches[i].identifier;
-                    }
-                    if (e.changedTouches[i].identifier === activeTouchId) {
-                        touch = e.changedTouches[i];
-                        break;
-                    }
+                    if (e.type === 'touchstart' && activeTouchId === null) activeTouchId = e.changedTouches[i].identifier;
+                    if (e.changedTouches[i].identifier === activeTouchId) { touch = e.changedTouches[i]; break; }
                 }
                 if (!touch) return;
-
                 if (e.type === 'touchend' || e.type === 'touchcancel') {
-                    resetStick();
+                    stick.style.transform = `translate(0px, 0px)`;
+                    activeTouchId = null;
+                    if (side === 'L') leftDir = "N"; if (side === 'R') rightDir = "N";
+                    updateMovement();
                     return;
                 }
-
                 const rect = base.getBoundingClientRect();
-                const centerX = rect.left + (rect.width / 2);
-                const centerY = rect.top + (rect.height / 2);
-                
-                let deltaX = touch.clientX - centerX;
-                let deltaY = touch.clientY - centerY;
+                let dx = touch.clientX - (rect.left + rect.width / 2);
+                let dy = touch.clientY - (rect.top + rect.height / 2);
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                let rad = Math.atan2(dy, dx);
+                let deg = rad * (180 / Math.PI);
 
-                let distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-                let angleRad = Math.atan2(deltaY, deltaX);
-                let angleDeg = angleRad * (180 / Math.PI);
-
-                if (distance > maxRadius) {
-                    deltaX = Math.cos(angleRad) * maxRadius;
-                    deltaY = Math.sin(angleRad) * maxRadius;
-                }
-
-                stick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                if (dist > 45) { dx = Math.cos(rad) * 45; dy = Math.sin(rad) * 45; }
+                stick.style.transform = `translate(${dx}px, ${dy}px)`;
 
                 let newDir = "N";
-                if (distance > deadzone) {
-                    if (angleDeg > -22.5 && angleDeg <= 22.5) newDir = "R";
-                    else if (angleDeg > 22.5 && angleDeg <= 67.5) newDir = "DR";
-                    else if (angleDeg > 67.5 && angleDeg <= 112.5) newDir = "D";
-                    else if (angleDeg > 112.5 && angleDeg <= 157.5) newDir = "DL";
-                    else if (angleDeg > 157.5 || angleDeg <= -157.5) newDir = "L";
-                    else if (angleDeg > -157.5 && angleDeg <= -112.5) newDir = "UL";
-                    else if (angleDeg > -112.5 && angleDeg <= -67.5) newDir = "U";
-                    else if (angleDeg > -67.5 && angleDeg <= -22.5) newDir = "UR";
+                if (dist > 15) {
+                    if (deg > -22.5 && deg <= 22.5) newDir = "R";
+                    else if (deg > 22.5 && deg <= 67.5) newDir = "DR";
+                    else if (deg > 67.5 && deg <= 112.5) newDir = "D";
+                    else if (deg > 112.5 && deg <= 157.5) newDir = "DL";
+                    else if (deg > 157.5 || deg <= -157.5) newDir = "L";
+                    else if (deg > -157.5 && deg <= -112.5) newDir = "UL";
+                    else if (deg > -112.5 && deg <= -67.5) newDir = "U";
+                    else if (deg > -67.5 && deg <= -22.5) newDir = "UR";
                 }
 
-                if (side === 'L' && leftDir !== newDir) {
-                    leftDir = newDir;
-                    updateMovement();
-                } else if (side === 'R' && rightDir !== newDir) {
-                    rightDir = newDir;
-                    updateMovement();
-                }
+                if (side === 'L' && leftDir !== newDir) { leftDir = newDir; updateMovement(); }
+                else if (side === 'R' && rightDir !== newDir) { rightDir = newDir; updateMovement(); }
             }
 
             base.addEventListener('touchstart', handleTouch, {passive: false});
-            base.addEventListener('touchmove', handleTouch, {passive: false});
-            base.addEventListener('touchend', handleTouch, {passive: false});
-            base.addEventListener('touchcancel', handleTouch, {passive: false});
-        }
-
-        setupJoystick('joy-left', 'stick-left', 'L');
-        setupJoystick('joy-right', 'stick-right', 'R');
-
-    </script>
-</body>
-</html>
+            base.addEventListener('touchmove',
