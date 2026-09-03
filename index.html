@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+
     <title>MAKEROBOT PRO Controller</title>
     <style>
         /* BASE STYLES */
@@ -96,12 +101,18 @@
             box-shadow: 0px 0px 0px #d35400;
         }
 
+        /* LOGO TOGGLE STYLING */
         .main-logo {
             max-width: 80%;
             max-height: 120px;
             object-fit: contain;
             filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
-            pointer-events: none;
+            cursor: pointer; /* Indicates it is clickable */
+            pointer-events: auto; /* Re-enabled click events */
+            transition: transform 0.1s ease;
+        }
+        .main-logo:active {
+            transform: scale(0.92); /* Subtle press animation */
         }
 
         .telemetry-box {
@@ -212,7 +223,7 @@
 
         <div class="center-panel">
             <button id="btn-connect">Connect BLITZ</button>
-            <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo">
+            <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo" id="logo-fullscreen">
             <div class="telemetry-box">
                 <div class="telemetry-label">Bluetooth Status</div>
                 <div id="status-text">OFFLINE</div>
@@ -236,6 +247,43 @@
     </div>
 
     <script>
+        // ==========================================
+        // LOGO FULLSCREEN TOGGLE
+        // ==========================================
+        const logo = document.getElementById('logo-fullscreen');
+
+        logo.addEventListener('click', () => {
+            const doc = document.documentElement;
+            const isFullscreen = document.fullscreenElement || 
+                                 document.webkitFullscreenElement || 
+                                 document.mozFullScreenElement || 
+                                 document.msFullscreenElement;
+
+            if (!isFullscreen) {
+                // Enter fullscreen
+                if (doc.requestFullscreen) {
+                    doc.requestFullscreen();
+                } else if (doc.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                    doc.webkitRequestFullscreen();
+                } else if (doc.mozRequestFullScreen) { /* Firefox */
+                    doc.mozRequestFullScreen();
+                } else if (doc.msRequestFullscreen) { /* IE/Edge */
+                    doc.msRequestFullscreen();
+                }
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        });
+
         // ==========================================
         // WEB BLUETOOTH API
         // ==========================================
