@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MAKEROBOT PRO Controller</title>
     <style>
-        /* THE SECRET SAUCE: Prevent zooming, scrolling, and text highlighting */
         body {
             margin: 0;
             padding: 0;
             background-color: #1e1e1e;
             color: white;
             font-family: Arial, sans-serif;
-            touch-action: none; /* Stops pull-to-refresh and swiping */
+            touch-action: none;
             user-select: none;
             overflow: hidden;
             display: flex;
@@ -29,7 +28,23 @@
             padding: 20px;
         }
 
-        /* Button Clusters (Diamond Shape) */
+        /* Center Logo Section */
+        .center-logo {
+            flex: 0.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; /* Prevents logo from interfering with multi-touch swipes */
+        }
+        
+        .center-logo img {
+            max-width: 100%;
+            height: auto;
+            background-color: transparent;
+            opacity: 0.85; /* Slight fade so it doesn't distract from the controls */
+        }
+
+        /* Button Clusters */
         .button-cluster {
             display: grid;
             grid-template-columns: 60px 60px 60px;
@@ -49,13 +64,13 @@
             align-items: center;
             box-shadow: 0px 4px 0px #1c2833;
         }
+        
         .btn:active, .btn.active {
             background-color: #2980b9;
             box-shadow: 0px 0px 0px #1c2833;
             transform: translateY(4px);
         }
 
-        /* Diamond Placements */
         .btn-top { grid-column: 2; grid-row: 1; }
         .btn-left { grid-column: 1; grid-row: 2; }
         .btn-right { grid-column: 3; grid-row: 2; }
@@ -80,11 +95,10 @@
             top: 45px;
             left: 45px;
             box-shadow: inset 0px 0px 10px rgba(0,0,0,0.5);
-            pointer-events: none; /* Let the base handle all touch math */
+            pointer-events: none;
             transition: transform 0.1s;
         }
 
-        /* Telemetry Readout */
         #readout {
             position: absolute;
             top: 10px;
@@ -94,12 +108,14 @@
             color: #2ecc71;
             font-family: monospace;
             pointer-events: none;
+            font-size: 16px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <div id="readout">L: NONE | R: NONE</div>
+    <div id="readout">SYSTEM READY</div>
 
     <!-- LEFT SIDE: D-Pad & Left Stick -->
     <div class="controller-half">
@@ -112,6 +128,11 @@
         <div class="joystick-base" id="joy-left">
             <div class="joystick-stick" id="stick-left"></div>
         </div>
+    </div>
+
+    <!-- CENTER: Logo -->
+    <div class="center-logo">
+        <img src="icon.png" alt="MAKEROBOT Logo">
     </div>
 
     <!-- RIGHT SIDE: ABXY & Right Stick -->
@@ -128,48 +149,71 @@
     </div>
 
     <script>
-        // --- BUTTON HANDLING (Multi-touch safe) ---
+        // --- BLUETOOTH SHORTCODE MAPPING ---
+        const btnCodes = {
+            'btn-up': 'U', 'btn-down': 'D', 'btn-left': 'L', 'btn-right': 'R',
+            'btn-y': 'Y', 'btn-a': 'A', 'btn-x': 'X', 'btn-b': 'B'
+        };
+
+        const dirCodes = {
+            "NONE": "N", "UP": "U", "DOWN": "D", "LEFT": "L", "RIGHT": "R",
+            "UP-LEFT": "UL", "UP-RIGHT": "UR", "DOWN-LEFT": "DL", "DOWN-RIGHT": "DR"
+        };
+
+        // --- BUTTON HANDLING ---
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Stop mouse-emulation
+                e.preventDefault();
                 btn.classList.add('active');
-                console.log(btn.id + " PRESSED");
-                // TODO: Send Bluetooth Command here
+                
+                let cmd = btnCodes[btn.id] + "1";
+                console.log("SENDING:", cmd);
+                document.getElementById('readout').innerText = "CMD: " + cmd;
+                
             }, {passive: false});
 
             btn.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 btn.classList.remove('active');
-                console.log(btn.id + " RELEASED");
-                // TODO: Send Bluetooth Command here
+                
+                let cmd = btnCodes[btn.id] + "0";
+                console.log("SENDING:", cmd);
+                document.getElementById('readout').innerText = "CMD: " + cmd;
+                
             }, {passive: false});
             
-            // Handle finger sliding off the button
             btn.addEventListener('touchcancel', (e) => {
                 btn.classList.remove('active');
+                console.log("SENDING:", btnCodes[btn.id] + "0");
             });
         });
 
         // --- 8-WAY JOYSTICK HANDLING ---
-        function setupJoystick(baseId, stickId, label) {
+        function setupJoystick(baseId, stickId, stickPrefix) {
             const base = document.getElementById(baseId);
             const stick = document.getElementById(stickId);
-            const maxRadius = 45; // Max visual travel distance
-            const deadzone = 15;  // Ignore tiny movements
+            const maxRadius = 45; 
+            const deadzone = 15;  
 
             let activeTouchId = null;
+            let currentDir = "NONE";
 
             function resetStick() {
                 stick.style.transform = `translate(0px, 0px)`;
                 activeTouchId = null;
-                updateReadout(label, "NONE");
+                
+                if (currentDir !== "NONE") {
+                    currentDir = "NONE";
+                    let cmd = stickPrefix + "_" + dirCodes[currentDir];
+                    console.log("SENDING:", cmd);
+                    document.getElementById('readout').innerText = "CMD: " + cmd;
+                }
             }
 
             function handleTouch(e) {
                 e.preventDefault();
                 
-                // Find our specific finger out of all touches
                 let touch = null;
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     if (e.type === 'touchstart' && activeTouchId === null) {
@@ -187,7 +231,6 @@
                     return;
                 }
 
-                // Math to find finger position relative to center of base
                 const rect = base.getBoundingClientRect();
                 const centerX = rect.left + (rect.width / 2);
                 const centerY = rect.top + (rect.height / 2);
@@ -195,12 +238,10 @@
                 let deltaX = touch.clientX - centerX;
                 let deltaY = touch.clientY - centerY;
 
-                // Distance and Angle
                 let distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
                 let angleRad = Math.atan2(deltaY, deltaX);
                 let angleDeg = angleRad * (180 / Math.PI);
 
-                // Cap the visual stick movement to the base border
                 if (distance > maxRadius) {
                     deltaX = Math.cos(angleRad) * maxRadius;
                     deltaY = Math.sin(angleRad) * maxRadius;
@@ -208,35 +249,31 @@
 
                 stick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
 
-                // 8-WAY DIGITAL LOGIC
-                let direction = "NONE";
+                let newDir = "NONE";
                 if (distance > deadzone) {
-                    if (angleDeg > -22.5 && angleDeg <= 22.5) direction = "RIGHT";
-                    else if (angleDeg > 22.5 && angleDeg <= 67.5) direction = "DOWN-RIGHT";
-                    else if (angleDeg > 67.5 && angleDeg <= 112.5) direction = "DOWN";
-                    else if (angleDeg > 112.5 && angleDeg <= 157.5) direction = "DOWN-LEFT";
-                    else if (angleDeg > 157.5 || angleDeg <= -157.5) direction = "LEFT";
-                    else if (angleDeg > -157.5 && angleDeg <= -112.5) direction = "UP-LEFT";
-                    else if (angleDeg > -112.5 && angleDeg <= -67.5) direction = "UP";
-                    else if (angleDeg > -67.5 && angleDeg <= -22.5) direction = "UP-RIGHT";
+                    if (angleDeg > -22.5 && angleDeg <= 22.5) newDir = "RIGHT";
+                    else if (angleDeg > 22.5 && angleDeg <= 67.5) newDir = "DOWN-RIGHT";
+                    else if (angleDeg > 67.5 && angleDeg <= 112.5) newDir = "DOWN";
+                    else if (angleDeg > 112.5 && angleDeg <= 157.5) newDir = "DOWN-LEFT";
+                    else if (angleDeg > 157.5 || angleDeg <= -157.5) newDir = "LEFT";
+                    else if (angleDeg > -157.5 && angleDeg <= -112.5) newDir = "UP-LEFT";
+                    else if (angleDeg > -112.5 && angleDeg <= -67.5) newDir = "UP";
+                    else if (angleDeg > -67.5 && angleDeg <= -22.5) newDir = "UP-RIGHT";
                 }
 
-                updateReadout(label, direction);
-                // TODO: Send Bluetooth Command here if direction changed
+                // Only log and update if the direction actually changed
+                if (newDir !== currentDir) {
+                    currentDir = newDir;
+                    let cmd = stickPrefix + "_" + dirCodes[currentDir];
+                    console.log("SENDING:", cmd);
+                    document.getElementById('readout').innerText = "CMD: " + cmd;
+                }
             }
 
             base.addEventListener('touchstart', handleTouch, {passive: false});
             base.addEventListener('touchmove', handleTouch, {passive: false});
             base.addEventListener('touchend', handleTouch, {passive: false});
             base.addEventListener('touchcancel', handleTouch, {passive: false});
-        }
-
-        let leftDir = "NONE";
-        let rightDir = "NONE";
-        function updateReadout(label, dir) {
-            if (label === 'L') leftDir = dir;
-            if (label === 'R') rightDir = dir;
-            document.getElementById('readout').innerText = `L: ${leftDir} | R: ${rightDir}`;
         }
 
         setupJoystick('joy-left', 'stick-left', 'L');
