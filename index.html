@@ -17,6 +17,7 @@
             margin: 0;
             padding: 0;
             background-color: #121212;
+            background-image: radial-gradient(circle at 50% 50%, #1e1e1e 0%, #0a0a0a 100%);
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             touch-action: none; 
@@ -79,31 +80,34 @@
             justify-content: space-evenly;
             align-items: center;
             height: 95%;
-            background-color: #1e1e1e;
-            border-radius: 15px;
+            background-color: #181818;
+            border-radius: 20px;
             padding: 15px;
-            box-shadow: inset 0px 0px 15px rgba(0,0,0,0.5);
-            border: 2px solid #333;
+            box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5);
+            border: 2px solid #2a2a2a;
             max-width: 300px;
         }
 
         /* CENTER PANEL UI */
         #btn-connect {
             width: 100%;
-            background-color: #e67e22;
-            color: white;
-            border: none;
+            background: linear-gradient(145deg, #333, #222);
+            color: #ddd;
+            border: 1px solid #444;
             padding: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 25px;
             cursor: pointer;
-            box-shadow: 0px 4px 0px #d35400;
+            box-shadow: 0px 4px 0px #111;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.1s;
         }
         #btn-connect:active {
             transform: translateY(4px);
-            box-shadow: 0px 0px 0px #d35400;
+            box-shadow: 0px 0px 0px #111;
+            background: linear-gradient(145deg, #222, #111);
         }
 
         /* LOGO AS BUTTON */
@@ -121,19 +125,20 @@
 
         .telemetry-box {
             width: 100%;
-            background-color: #000;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 8px 10px;
+            background-color: #050505;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 10px 10px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 3px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,1);
         }
 
         .telemetry-label {
-            color: #888;
+            color: #666;
             font-size: 9px;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -152,114 +157,93 @@
         /* BUTTON CLUSTERS */
         .button-cluster {
             display: grid;
-            grid-template-columns: 45px 45px 45px; 
-            grid-template-rows: 45px 45px 45px;
-            gap: 2px; 
+            grid-template-columns: 50px 50px 50px; 
+            grid-template-rows: 50px 50px 50px;
+            gap: 4px; 
         }
 
-        .btn {
-            background-color: #3455db;
-            border-radius: 50%;
-            border: 2px solid #2c3e50;
-            color: white;
-            font-weight: bold;
-            font-size: 14px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0px 4px 0px #1c2833;
-        }
-        .btn:active, .btn.active {
-            background-color: #2980b9;
-            box-shadow: 0px 0px 0px #1c2833;
-            transform: translateY(4px);
-        }
-
-        /* ARROW BUTTON STYLES (PURE CSS TRIANGLES) */
-        .btn-arrow {
-            width: 0;
-            height: 0;
-            background: transparent;
-            border-radius: 0;
-            box-shadow: none;
-            filter: drop-shadow(0px 4px 0px #1c2833);
-            cursor: pointer;
-        }
-
-        .btn-arrow.btn-top {
-            grid-column: 2; grid-row: 1;
-            border-left: 22px solid transparent;
-            border-right: 22px solid transparent;
-            border-bottom: 38px solid #3455db;
-        }
-        .btn-arrow.btn-bottom {
-            grid-column: 2; grid-row: 3;
-            border-left: 22px solid transparent;
-            border-right: 22px solid transparent;
-            border-top: 38px solid #3455db;
-        }
-        .btn-arrow.btn-left {
-            grid-column: 1; grid-row: 2;
-            border-top: 22px solid transparent;
-            border-bottom: 22px solid transparent;
-            border-right: 38px solid #3455db;
-        }
-        .btn-arrow.btn-right {
-            grid-column: 3; grid-row: 2;
-            border-top: 22px solid transparent;
-            border-bottom: 22px solid transparent;
-            border-left: 38px solid #3455db;
-        }
-
-        /* ARROW ACTIVE STATES */
-        .btn-arrow.btn-top:active, .btn-arrow.btn-top.active {
-            border-bottom-color: #2980b9;
-            filter: drop-shadow(0px 0px 0px #1c2833);
-            transform: translateY(4px);
-        }
-        .btn-arrow.btn-bottom:active, .btn-arrow.btn-bottom.active {
-            border-top-color: #2980b9;
-            filter: drop-shadow(0px 0px 0px #1c2833);
-            transform: translateY(4px);
-        }
-        .btn-arrow.btn-left:active, .btn-arrow.btn-left.active {
-            border-right-color: #2980b9;
-            filter: drop-shadow(0px 0px 0px #1c2833);
-            transform: translateY(4px);
-        }
-        .btn-arrow.btn-right:active, .btn-arrow.btn-right.active {
-            border-left-color: #2980b9;
-            filter: drop-shadow(0px 0px 0px #1c2833);
-            transform: translateY(4px);
-        }
-
+        /* COMMON BUTTON POSITIONING */
         .btn-top { grid-column: 2; grid-row: 1; }
         .btn-left { grid-column: 1; grid-row: 2; }
         .btn-right { grid-column: 3; grid-row: 2; }
         .btn-bottom { grid-column: 2; grid-row: 3; }
 
+        /* D-PAD STYLING (LEFT SIDE) */
+        .btn-dpad {
+            background: linear-gradient(145deg, #3a3a3a, #222);
+            border-radius: 8px; /* Slightly squared off like PS d-pad */
+            border: 1px solid #1a1a1a;
+            color: #888;
+            font-size: 18px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 0px #0a0a0a, inset 0 2px 2px rgba(255,255,255,0.05);
+            cursor: pointer;
+        }
+        .btn-dpad:active, .btn-dpad.active {
+            background: #222;
+            box-shadow: 0px 0px 0px #0a0a0a, inset 0 4px 8px rgba(0,0,0,0.8);
+            transform: translateY(4px);
+            color: #fff;
+        }
+
+        /* ACTION BUTTON STYLING (RIGHT SIDE) */
+        .btn-action {
+            background: linear-gradient(145deg, #333, #1a1a1a);
+            border-radius: 50%; /* Perfect circles */
+            border: 1px solid #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 5px 0px #050505, inset 0 2px 4px rgba(255,255,255,0.1);
+            cursor: pointer;
+        }
+        .btn-action:active, .btn-action.active {
+            background: #1a1a1a;
+            box-shadow: 0px 0px 0px #050505, inset 0 4px 8px rgba(0,0,0,0.8);
+            transform: translateY(5px);
+        }
+
+        /* PLAYSTATION BUTTON COLORS AND SIZES */
+        #btn-y { color: #10eb71; font-size: 20px; } /* Triangle (Green) */
+        #btn-b { color: #f2355b; font-size: 22px; } /* Circle (Red) */
+        #btn-a { color: #5976eb; font-size: 20px; } /* Cross (Blue) */
+        #btn-x { color: #df55a3; font-size: 24px; } /* Square (Pink) */
+
         /* JOYSTICKS */
         .joystick-base {
             width: 160px; 
             height: 160px;
-            background-color: #2a2a2a;
+            background-color: #151515;
             border-radius: 50%;
             position: relative;
-            border: 3px solid #444;
-            box-shadow: inset 0px 0px 20px rgba(0,0,0,0.8);
+            border: 2px solid #2a2a2a;
+            box-shadow: inset 0px 0px 25px rgba(0,0,0,0.9), 0 5px 15px rgba(0,0,0,0.5);
         }
         
         .joystick-stick {
             width: 60px; 
             height: 60px;
-            background-color: #e74c3c;
+            /* Textured dark rubber look */
+            background: radial-gradient(circle at center, #444 30%, #1a1a1a 90%);
             border-radius: 50%;
             position: absolute;
             top: 50px; 
             left: 50px;
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4), 0px 5px 10px rgba(0,0,0,0.5);
+            border: 2px solid #111;
+            box-shadow: 0px 8px 15px rgba(0,0,0,0.6), inset 0px 2px 5px rgba(255,255,255,0.15);
             pointer-events: none;
             transition: transform 0.05s linear;
+        }
+        /* Adding an inner ring to mimic real thumbsticks */
+        .joystick-stick::after {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border-radius: 50%;
+            border: 2px solid #222;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -272,13 +256,13 @@
 
     <div class="app-container">
         
-        <!-- LEFT SIDE (DIRECTIONAL ARROW BUTTONS) -->
+        <!-- LEFT SIDE (D-PAD) -->
         <div class="side-panel">
             <div class="button-cluster">
-                <div class="btn-arrow btn-top" id="btn-up"></div>
-                <div class="btn-arrow btn-left" id="btn-left"></div>
-                <div class="btn-arrow btn-right" id="btn-right"></div>
-                <div class="btn-arrow btn-bottom" id="btn-down"></div>
+                <div class="btn btn-dpad btn-top" id="btn-up">▲</div>
+                <div class="btn btn-dpad btn-left" id="btn-left">◀</div>
+                <div class="btn btn-dpad btn-right" id="btn-right">▶</div>
+                <div class="btn btn-dpad btn-bottom" id="btn-down">▼</div>
             </div>
             <div class="joystick-base" id="joy-left">
                 <div class="joystick-stick" id="stick-left"></div>
@@ -304,10 +288,10 @@
         <!-- RIGHT SIDE (ACTION BUTTONS) -->
         <div class="side-panel">
             <div class="button-cluster">
-                <div class="btn btn-top" id="btn-y">Y</div>
-                <div class="btn btn-left" id="btn-x">X</div>
-                <div class="btn btn-right" id="btn-b">B</div>
-                <div class="btn btn-bottom" id="btn-a">A</div>
+                <div class="btn btn-action btn-top" id="btn-y">▲</div>
+                <div class="btn btn-action btn-left" id="btn-x">■</div>
+                <div class="btn btn-action btn-right" id="btn-b">●</div>
+                <div class="btn btn-action btn-bottom" id="btn-a">✖</div>
             </div>
             <div class="joystick-base" id="joy-right">
                 <div class="joystick-stick" id="stick-right"></div>
@@ -378,9 +362,12 @@
                 statusText.innerText = "CONNECTED";
                 statusText.style.color = "#2ecc71"; 
                 telemetryRx.innerText = "READY";
+                
+                // Update connect button styling for connected state
                 connectBtn.innerText = "DISCONNECT";
-                connectBtn.style.backgroundColor = "#27ae60";
-                connectBtn.style.boxShadow = "0px 4px 0px #1e8449";
+                connectBtn.style.background = "linear-gradient(145deg, #27ae60, #1e8449)";
+                connectBtn.style.borderColor = "#1e8449";
+                connectBtn.style.boxShadow = "0px 4px 0px #145a32";
 
             } catch (error) {
                 console.error('Bluetooth Error:', error);
@@ -403,9 +390,13 @@
             statusText.innerText = "OFFLINE";
             statusText.style.color = "#e74c3c"; 
             telemetryRx.innerText = "WAITING...";
+            
+            // Revert connect button styling
             connectBtn.innerText = "Connect BLITZ";
-            connectBtn.style.backgroundColor = "#e67e22";
-            connectBtn.style.boxShadow = "0px 4px 0px #d35400";
+            connectBtn.style.background = "linear-gradient(145deg, #333, #222)";
+            connectBtn.style.borderColor = "#444";
+            connectBtn.style.boxShadow = "0px 4px 0px #111";
+            
             rxCharacteristic = null;
             txCharacteristic = null;
         }
@@ -437,8 +428,7 @@
             'btn-y': 'Y', 'btn-a': 'a', 'btn-x': 'X', 'btn-b': 'b'
         };
 
-        // Select both circular buttons (.btn) and arrow buttons (.btn-arrow)
-        const buttons = document.querySelectorAll('.btn, .btn-arrow');
+        const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
