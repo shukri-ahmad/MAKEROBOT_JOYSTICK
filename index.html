@@ -373,4 +373,148 @@
         // ==========================================
         const btnCodes = {
             'btn-up': 'DIR_U', 'btn-down': 'DIR_D', 'btn-left': 'DIR_L', 'btn-right': 'DIR_R',
-            'btn-y': 'ACT_Y', 'btn-a': 'ACT_A', 'btn-x': 'ACT_X', 'btn-b': '
+            'btn-y': 'ACT_Y', 'btn-a': 'ACT_A', 'btn-x': 'ACT_X', 'btn-b': 'ACT_B'
+        };
+
+        const buttonStates = {}; 
+
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (!buttonStates[btn.id]) {
+                    buttonStates[btn.id] = true;
+                    btn.classList.add('active');
+                    sendCommand(btnCodes[btn.id] + "_ON");
+                }
+            }, {passive: false});
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                if (buttonStates[btn.id]) {
+                    buttonStates[btn.id] = false;
+                    btn.classList.remove('active');
+                    sendCommand(btnCodes[btn.id] + "_OFF");
+                }
+            }, {passive: false});
+            
+            btn.addEventListener('touchcancel', (e) => {
+                if (buttonStates[btn.id]) {
+                    buttonStates[btn.id] = false;
+                    btn.classList.remove('active');
+                    sendCommand(btnCodes[btn.id] + "_OFF");
+                }
+            });
+        });
+
+        let leftDir = "N";
+        let rightDir = "N";
+        let currentMoveCmd = "M_N"; 
+
+        function updateMovement() {
+            let newMoveCmd = "M_N"; 
+
+            if (leftDir === "U" && rightDir === "N") newMoveCmd = "M_U";
+            else if (leftDir === "D" && rightDir === "N") newMoveCmd = "M_D";
+            else if (leftDir === "N" && rightDir === "L") newMoveCmd = "M_L";
+            else if (leftDir === "N" && rightDir === "R") newMoveCmd = "M_R";
+            else if (leftDir === "U" && rightDir === "L") newMoveCmd = "M_UL";
+            else if (leftDir === "U" && rightDir === "R") newMoveCmd = "M_UR";
+            else if (leftDir === "D" && rightDir === "L") newMoveCmd = "M_DL";
+            else if (leftDir === "D" && rightDir === "R") newMoveCmd = "M_DR";
+
+            if (newMoveCmd !== currentMoveCmd) {
+                currentMoveCmd = newMoveCmd;
+                sendCommand(currentMoveCmd);
+            }
+        }
+
+        function setupJoystick(baseId, stickId, side) {
+            const base = document.getElementById(baseId);
+            const stick = document.getElementById(stickId);
+            
+            const maxRadius = 50; 
+            const deadzone = 15;  
+
+            let activeTouchId = null;
+
+            function resetStick() {
+                stick.style.transform = `translate(0px, 0px)`;
+                activeTouchId = null;
+                
+                if (side === 'L') leftDir = "N";
+                if (side === 'R') rightDir = "N";
+                updateMovement();
+            }
+
+            function handleTouch(e) {
+                e.preventDefault();
+                
+                let touch = null;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.type === 'touchstart' && activeTouchId === null) {
+                        activeTouchId = e.changedTouches[i].identifier;
+                    }
+                    if (e.changedTouches[i].identifier === activeTouchId) {
+                        touch = e.changedTouches[i];
+                        break;
+                    }
+                }
+                if (!touch) return;
+
+                if (e.type === 'touchend' || e.type === 'touchcancel') {
+                    resetStick();
+                    return;
+                }
+
+                const rect = base.getBoundingClientRect();
+                const centerX = rect.left + (rect.width / 2);
+                const centerY = rect.top + (rect.height / 2);
+                
+                let deltaX = touch.clientX - centerX;
+                let deltaY = touch.clientY - centerY;
+
+                let distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+                let angleRad = Math.atan2(deltaY, deltaX);
+                let angleDeg = angleRad * (180 / Math.PI);
+
+                if (distance > maxRadius) {
+                    deltaX = Math.cos(angleRad) * maxRadius;
+                    deltaY = Math.sin(angleRad) * maxRadius;
+                }
+
+                stick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+                let newDir = "N";
+                if (distance > deadzone) {
+                    if (angleDeg > -22.5 && angleDeg <= 22.5) newDir = "R";
+                    else if (angleDeg > 22.5 && angleDeg <= 67.5) newDir = "DR";
+                    else if (angleDeg > 67.5 && angleDeg <= 112.5) newDir = "D";
+                    else if (angleDeg > 112.5 && angleDeg <= 157.5) newDir = "DL";
+                    else if (angleDeg > 157.5 || angleDeg <= -157.5) newDir = "L";
+                    else if (angleDeg > -157.5 && angleDeg <= -112.5) newDir = "UL";
+                    else if (angleDeg > -112.5 && angleDeg <= -67.5) newDir = "U";
+                    else if (angleDeg > -67.5 && angleDeg <= -22.5) newDir = "UR";
+                }
+
+                if (side === 'L' && leftDir !== newDir) {
+                    leftDir = newDir;
+                    updateMovement();
+                } else if (side === 'R' && rightDir !== newDir) {
+                    rightDir = newDir;
+                    updateMovement();
+                }
+            }
+
+            base.addEventListener('touchstart', handleTouch, {passive: false});
+            base.addEventListener('touchmove', handleTouch, {passive: false});
+            base.addEventListener('touchend', handleTouch, {passive: false});
+            base.addEventListener('touchcancel', handleTouch, {passive: false});
+        }
+
+        setupJoystick('joy-left', 'stick-left', 'L');
+        setupJoystick('joy-right', 'stick-right', 'R');
+
+    </script>
+</body>
+</html>
