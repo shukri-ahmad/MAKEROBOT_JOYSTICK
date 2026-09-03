@@ -294,7 +294,7 @@
 
         /* TERMINAL (RIGHT SIDE - TRACER MODE ONLY) */
         .terminal-container {
-            display: none; /* Hidden by default */
+            display: none; 
             flex-direction: column;
             width: 90%;
             height: 85%;
@@ -484,43 +484,35 @@
         function setRobotMode(mode) {
             currentRobot = mode;
             if (mode === 'BLITZ') {
-                // UI Toggle
                 modeBlitz.classList.add('active');
                 modeTracer.classList.remove('active');
                 document.body.classList.remove('tracer-theme');
                 metaThemeColor.setAttribute('content', '#121212');
                 
-                // Reset D-Pad Size
                 leftDpadCluster.classList.remove('large-dpad');
 
-                // Show BLITZ specific UI
                 joyLeft.style.display = 'block';
                 joyRight.style.display = 'block';
                 rightActionCluster.style.display = 'grid';
-                terminalContainer.style.display = 'none'; // Hide terminal
+                terminalContainer.style.display = 'none'; 
                 
-                // Update Text
                 rxLabel.innerText = 'BLITZ DATA';
                 if(document.getElementById('status-text').innerText !== "CONNECTED") {
                     connectBtn.innerText = 'Connect BLITZ';
                 }
             } else {
-                // UI Toggle
                 modeTracer.classList.add('active');
                 modeBlitz.classList.remove('active');
-                document.body.classList.add('tracer-theme'); // Triggers White Theme
+                document.body.classList.add('tracer-theme'); 
                 metaThemeColor.setAttribute('content', '#ffffff');
                 
-                // Enlarge D-Pad
                 leftDpadCluster.classList.add('large-dpad');
 
-                // Show TRACER specific UI
                 joyLeft.style.display = 'none';
                 joyRight.style.display = 'none';
                 rightActionCluster.style.display = 'none';
-                terminalContainer.style.display = 'flex'; // Show terminal
+                terminalContainer.style.display = 'flex'; 
                 
-                // Update Text
                 rxLabel.innerText = 'TRACER DATA';
                 if(document.getElementById('status-text').innerText !== "CONNECTED") {
                     connectBtn.innerText = 'Connect TRACER';
@@ -537,7 +529,7 @@
         const terminalOutput = document.getElementById('terminal-output');
         const btnClear = document.getElementById('btn-clear');
 
-        function logToTerminal(cmd) {
+        function logToTerminal(msg) {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
                             now.getMinutes().toString().padStart(2, '0') + ':' + 
@@ -545,11 +537,9 @@
                             
             const line = document.createElement('div');
             line.className = 'terminal-line';
-            line.innerHTML = `<span class="terminal-time">[${timeStr}]</span> > ${cmd}`;
+            line.innerHTML = `<span class="terminal-time">[${timeStr}]</span> > ${msg}`;
             
             terminalOutput.appendChild(line);
-            
-            // Auto scroll to bottom
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
 
@@ -596,7 +586,7 @@
         const telemetryRx = document.getElementById('telemetry-rx');
 
         connectBtn.addEventListener('click', async () => {
-            if (rxCharacteristic) return; // Ignore if already connected
+            if (rxCharacteristic) return;
 
             try {
                 statusText.innerText = "SCANNING...";
@@ -640,11 +630,7 @@
             let receivedString = decoder.decode(value).trim();
             receivedString = receivedString.replace("#", "");
             telemetryRx.innerText = receivedString;
-            
-            // Log incoming data to terminal if in TRACER mode
-            if(currentRobot === 'TRACER') {
-                logToTerminal(`RX: ${receivedString}`);
-            }
+            // Cleaned terminal: We deliberately ignore raw RX logs here.
         }
 
         function onDisconnected() {
@@ -654,7 +640,6 @@
             
             connectBtn.innerText = `Connect ${currentRobot}`;
             
-            // Reset connect button styling based on theme
             if(currentRobot === 'TRACER') {
                 connectBtn.style.background = "linear-gradient(145deg, #eee, #ddd)";
                 connectBtn.style.borderColor = "#ccc";
@@ -672,8 +657,7 @@
         async function sendCommand(cmd) {
             readout.innerText = cmd;
             
-            // Log outgoing data to terminal
-            logToTerminal(`TX: ${cmd}`);
+            // Cleaned terminal: We deliberately ignore raw TX logs here too.
 
             if (!rxCharacteristic) return; 
 
@@ -688,7 +672,6 @@
                 }
             } catch (error) {
                 console.error('Send Error:', error);
-                logToTerminal(`ERR: Failed to send`);
             }
         }
 
@@ -700,23 +683,52 @@
             'btn-tri': 'tri', 'btn-cross': 'cross', 'btn-sq': 'sq', 'btn-cir': 'cir'
         };
 
+        // NEW: Throttle lock for TRACER terminal 0.5s requirement
+        let tracerDelayLock = false;
+
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
+                
+                // If in TRACER mode, enforce 0.5 sec delay between button presses
+                if (currentRobot === 'TRACER' && tracerDelayLock) {
+                    return; // Ignore the press completely if the lock is active
+                }
+                
                 btn.classList.add('active');
-                sendCommand(btnCodes[btn.id] + "1");
+                
+                let baseCmd = btnCodes[btn.id];
+                sendCommand(baseCmd + "1");
+
+                // Execute TRACER specific Logging and 0.5s Throttle
+                if (currentRobot === 'TRACER') {
+                    // Only log human readable Direction
+                    logToTerminal(`PRESSED: ${baseCmd.toUpperCase()}`);
+                    
+                    tracerDelayLock = true;
+                    setTimeout(() => {
+                        tracerDelayLock = false;
+                    }, 500); // 0.5 sec delay
+                }
+                
             }, {passive: false});
 
             btn.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                btn.classList.remove('active');
-                sendCommand(btnCodes[btn.id] + "0");
+                
+                // Only fire the release command if the button was actually active 
+                if (btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    sendCommand(btnCodes[btn.id] + "0");
+                }
             }, {passive: false});
             
             btn.addEventListener('touchcancel', (e) => {
-                btn.classList.remove('active');
-                sendCommand(btnCodes[btn.id] + "0");
+                if (btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    sendCommand(btnCodes[btn.id] + "0");
+                }
             });
         });
 
