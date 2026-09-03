@@ -12,7 +12,7 @@
             background-color: #121212;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none; /* Prevents swiping and scrolling */
+            touch-action: none; 
             user-select: none;
             overflow: hidden;
             display: flex;
@@ -63,7 +63,7 @@
         }
 
         .center-panel {
-            flex: 1.2;
+            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -74,6 +74,7 @@
             padding: 15px;
             box-shadow: inset 0px 0px 15px rgba(0,0,0,0.5);
             border: 2px solid #333;
+            max-width: 300px;
         }
 
         /* CENTER PANEL UI */
@@ -130,14 +131,14 @@
             font-weight: bold;
             text-align: center;
         }
-        #status-text { color: #e74c3c; font-size: 14px; } /* Defaults to red/disconnected */
+        #status-text { color: #e74c3c; font-size: 14px; }
 
-        /* BUTTON CLUSTERS */
+        /* BUTTON CLUSTERS (Smaller & Tighter) */
         .button-cluster {
             display: grid;
-            grid-template-columns: 50px 50px 50px;
-            grid-template-rows: 50px 50px 50px;
-            gap: 5px;
+            grid-template-columns: 45px 45px 45px; /* Reduced from 50px */
+            grid-template-rows: 45px 45px 45px;
+            gap: 2px; /* Tightly packed */
         }
 
         .btn {
@@ -146,7 +147,7 @@
             border: 2px solid #2c3e50;
             color: white;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 11px; /* Slightly smaller text */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -163,10 +164,10 @@
         .btn-right { grid-column: 3; grid-row: 2; }
         .btn-bottom { grid-column: 2; grid-row: 3; }
 
-        /* JOYSTICKS */
+        /* JOYSTICKS (Bigger) */
         .joystick-base {
-            width: 130px;
-            height: 130px;
+            width: 160px; /* Increased from 130px */
+            height: 160px;
             background-color: #2a2a2a;
             border-radius: 50%;
             position: relative;
@@ -175,13 +176,13 @@
         }
         
         .joystick-stick {
-            width: 50px;
-            height: 50px;
+            width: 60px; /* Increased inner thumbstick */
+            height: 60px;
             background-color: #e74c3c;
             border-radius: 50%;
             position: absolute;
-            top: 40px; /* (130 - 50) / 2 */
-            left: 40px;
+            top: 50px; /* (160 - 60) / 2 = 50px perfectly centered */
+            left: 50px;
             box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4), 0px 5px 10px rgba(0,0,0,0.5);
             pointer-events: none;
             transition: transform 0.05s linear;
@@ -190,16 +191,14 @@
 </head>
 <body>
 
-    <!-- OVERLAY FOR WRONG PHONE ORIENTATION -->
     <div id="portrait-warning">
         <div>🔄</div>
         <div>Please rotate your phone to Landscape mode</div>
     </div>
 
-    <!-- MAIN APP INTERFACE -->
     <div class="app-container">
         
-        <!-- LEFT SIDE: D-Pad & Left Stick -->
+        <!-- LEFT SIDE -->
         <div class="side-panel">
             <div class="button-cluster">
                 <div class="btn btn-top" id="btn-up">UP</div>
@@ -212,12 +211,10 @@
             </div>
         </div>
 
-        <!-- CENTER SIDE: Logo, Connect, Telemetry -->
+        <!-- CENTER SIDE -->
         <div class="center-panel">
             <button id="btn-connect">Connect BLITZ</button>
-            
             <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo">
-            
             <div class="telemetry-box">
                 <div class="telemetry-label">Bluetooth Status</div>
                 <div id="status-text">OFFLINE</div>
@@ -226,7 +223,7 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDE: ABXY & Right Stick -->
+        <!-- RIGHT SIDE -->
         <div class="side-panel">
             <div class="button-cluster">
                 <div class="btn btn-top" id="btn-y">Y</div>
@@ -243,6 +240,22 @@
 
     <script>
         // ==========================================
+        // FULLSCREEN API
+        // ==========================================
+        function requestFullScreen() {
+            let docElm = document.documentElement;
+            if (docElm.requestFullscreen) {
+                docElm.requestFullscreen();
+            } else if (docElm.mozRequestFullScreen) { // Firefox
+                docElm.mozRequestFullScreen();
+            } else if (docElm.webkitRequestFullScreen) { // Chrome, Safari and Opera
+                docElm.webkitRequestFullScreen();
+            } else if (docElm.msRequestFullscreen) { // IE/Edge
+                docElm.msRequestFullscreen();
+            }
+        }
+
+        // ==========================================
         // WEB BLUETOOTH API
         // ==========================================
         let bleDevice;
@@ -258,9 +271,12 @@
         const statusText = document.getElementById('status-text');
 
         connectBtn.addEventListener('click', async () => {
+            // Trigger Fullscreen immediately when they click!
+            try { requestFullScreen(); } catch(e) { console.log("Fullscreen blocked"); }
+
             try {
                 statusText.innerText = "SCANNING...";
-                statusText.style.color = "#f39c12"; // Orange
+                statusText.style.color = "#f39c12"; 
                 
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'BBC micro:bit' }],
@@ -275,7 +291,7 @@
                 rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
 
                 statusText.innerText = "CONNECTED";
-                statusText.style.color = "#2ecc71"; // Green
+                statusText.style.color = "#2ecc71"; 
                 connectBtn.innerText = "DISCONNECT";
                 connectBtn.style.backgroundColor = "#27ae60";
                 connectBtn.style.boxShadow = "0px 4px 0px #1e8449";
@@ -289,7 +305,7 @@
 
         function onDisconnected() {
             statusText.innerText = "OFFLINE";
-            statusText.style.color = "#e74c3c"; // Red
+            statusText.style.color = "#e74c3c"; 
             connectBtn.innerText = "Connect BLITZ";
             connectBtn.style.backgroundColor = "#e67e22";
             connectBtn.style.boxShadow = "0px 4px 0px #d35400";
@@ -343,7 +359,6 @@
             });
         });
 
-        // Combined logic for tank/mecanum control
         let leftDir = "N";
         let rightDir = "N";
         let currentMoveCmd = "M_N"; 
@@ -366,14 +381,13 @@
             }
         }
 
-        // 8-Way Thumbstick Sensing
         function setupJoystick(baseId, stickId, side) {
             const base = document.getElementById(baseId);
             const stick = document.getElementById(stickId);
             
-            // Updated math for the new 130px joystick base
-            const maxRadius = 40; 
-            const deadzone = 12;  
+            // Updated math for the larger 160px base
+            const maxRadius = 50; // Visual travel limit 
+            const deadzone = 15;  // Requires more push before moving
 
             let activeTouchId = null;
 
