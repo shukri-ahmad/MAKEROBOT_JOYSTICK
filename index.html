@@ -110,17 +110,35 @@
             background: linear-gradient(145deg, #222, #111);
         }
 
-        /* LOGO AS BUTTON */
+        /* XBOX-STYLE HOME BUTTON (LOGO) */
         .main-logo {
-            max-width: 80%;
-            max-height: 90px; 
+            width: 105px;  /* Slightly larger */
+            height: 105px;
+            padding: 16px; /* Space inside the ring for the logo */
+            box-sizing: border-box;
+            
+            /* 3D Sphere/Dome gradient */
+            background: radial-gradient(circle at 35% 35%, #4a4a4a, #0a0a0a);
+            
+            /* Silver/Gray ring like Xbox button */
+            border: 3px solid #888;
+            border-radius: 50%;
+            
             object-fit: contain;
-            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
-            cursor: pointer; 
-            transition: transform 0.1s;
+            
+            /* Outer shadow for pop, Inner shadows for dome reflection */
+            box-shadow: 0 8px 15px rgba(0,0,0,0.9), 
+                        inset 0 -4px 10px rgba(0,0,0,0.6), 
+                        inset 0 3px 5px rgba(255,255,255,0.3);
+                        
+            cursor: pointer;
+            transition: all 0.1s ease;
         }
         .main-logo:active {
-            transform: scale(0.92); 
+            transform: scale(0.92);
+            border-color: #555;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.9), 
+                        inset 0 6px 12px rgba(0,0,0,0.9);
         }
 
         .telemetry-box {
@@ -206,10 +224,10 @@
         }
 
         /* PLAYSTATION BUTTON COLORS AND SIZES */
-        #btn-y { color: #10eb71; font-size: 20px; } /* Triangle (Green) */
-        #btn-b { color: #f2355b; font-size: 22px; } /* Circle (Red) */
-        #btn-a { color: #5976eb; font-size: 20px; } /* Cross (Blue) */
-        #btn-x { color: #df55a3; font-size: 24px; } /* Square (Pink) */
+        #btn-tri { color: #10eb71; font-size: 20px; } /* Triangle (Green) */
+        #btn-cir { color: #f2355b; font-size: 22px; } /* Circle (Red) */
+        #btn-cross { color: #5976eb; font-size: 20px; } /* Cross (Blue) */
+        #btn-sq { color: #df55a3; font-size: 24px; } /* Square (Pink) */
 
         /* JOYSTICKS */
         .joystick-base {
@@ -273,6 +291,7 @@
         <div class="center-panel">
             <button id="btn-connect">Connect BLITZ</button>
             
+            <!-- REDESIGNED XBOX-STYLE HOME BUTTON -->
             <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo" id="logo-fullscreen">
             
             <div class="telemetry-box">
@@ -288,10 +307,10 @@
         <!-- RIGHT SIDE (ACTION BUTTONS) -->
         <div class="side-panel">
             <div class="button-cluster">
-                <div class="btn btn-action btn-top" id="btn-y">▲</div>
-                <div class="btn btn-action btn-left" id="btn-x">■</div>
-                <div class="btn btn-action btn-right" id="btn-b">●</div>
-                <div class="btn btn-action btn-bottom" id="btn-a">✖</div>
+                <div class="btn btn-action btn-top" id="btn-tri">▲</div>
+                <div class="btn btn-action btn-left" id="btn-sq">■</div>
+                <div class="btn btn-action btn-right" id="btn-cir">●</div>
+                <div class="btn btn-action btn-bottom" id="btn-cross">✖</div>
             </div>
             <div class="joystick-base" id="joy-right">
                 <div class="joystick-stick" id="stick-right"></div>
@@ -363,7 +382,6 @@
                 statusText.style.color = "#2ecc71"; 
                 telemetryRx.innerText = "READY";
                 
-                // Update connect button styling for connected state
                 connectBtn.innerText = "DISCONNECT";
                 connectBtn.style.background = "linear-gradient(145deg, #27ae60, #1e8449)";
                 connectBtn.style.borderColor = "#1e8449";
@@ -391,7 +409,6 @@
             statusText.style.color = "#e74c3c"; 
             telemetryRx.innerText = "WAITING...";
             
-            // Revert connect button styling
             connectBtn.innerText = "Connect BLITZ";
             connectBtn.style.background = "linear-gradient(145deg, #333, #222)";
             connectBtn.style.borderColor = "#444";
@@ -421,11 +438,11 @@
         }
 
         // ==========================================
-        // CONTROLLER LOGIC
+        // CONTROLLER LOGIC & MAPPING
         // ==========================================
         const btnCodes = {
-            'btn-up': 'U', 'btn-down': 'D', 'btn-left': 'L', 'btn-right': 'R',
-            'btn-y': 'Y', 'btn-a': 'a', 'btn-x': 'X', 'btn-b': 'b'
+            'btn-up': 'up', 'btn-down': 'down', 'btn-left': 'left', 'btn-right': 'right',
+            'btn-tri': 'tri', 'btn-cross': 'cross', 'btn-sq': 'sq', 'btn-cir': 'cir'
         };
 
         const buttons = document.querySelectorAll('.btn');
