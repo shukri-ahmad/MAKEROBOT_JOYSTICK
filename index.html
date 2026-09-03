@@ -229,6 +229,7 @@
             box-shadow: 0px 4px 0px #0a0a0a, inset 0 2px 2px rgba(255,255,255,0.05);
             cursor: pointer;
             transition: all 0.1s ease;
+            user-select: none;
         }
         .btn-dpad:active, .btn-dpad.active {
             background: #222;
@@ -255,6 +256,7 @@
             align-items: center;
             box-shadow: 0px 5px 0px #050505, inset 0 2px 4px rgba(255,255,255,0.1);
             cursor: pointer;
+            user-select: none;
         }
         .btn-action:active, .btn-action.active {
             background: #1a1a1a;
@@ -630,7 +632,6 @@
             let receivedString = decoder.decode(value).trim();
             receivedString = receivedString.replace("#", "");
             telemetryRx.innerText = receivedString;
-            // Cleaned terminal: We deliberately ignore raw RX logs here.
         }
 
         function onDisconnected() {
@@ -656,8 +657,6 @@
 
         async function sendCommand(cmd) {
             readout.innerText = cmd;
-            
-            // Cleaned terminal: We deliberately ignore raw TX logs here too.
 
             if (!rxCharacteristic) return; 
 
@@ -683,55 +682,84 @@
             'btn-tri': 'tri', 'btn-cross': 'cross', 'btn-sq': 'sq', 'btn-cir': 'cir'
         };
 
-        // NEW: Throttle lock for TRACER terminal 0.5s requirement
+        // Keyboard Arrow Mapping
+        const keyMap = {
+            'ArrowUp': 'btn-up',
+            'ArrowDown': 'btn-down',
+            'ArrowLeft': 'btn-left',
+            'ArrowRight': 'btn-right'
+        };
+
         let tracerDelayLock = false;
 
+        // Abstracted Button Press Logic (Works for Touch, Mouse, and Keyboard)
+        function handleButtonPress(btn) {
+            if (currentRobot === 'TRACER' && tracerDelayLock) {
+                return; // Enforce 0.5 sec delay lock
+            }
+            if (btn.classList.contains('active')) {
+                return; // Prevent repeating if already held down
+            }
+            
+            btn.classList.add('active');
+            let baseCmd = btnCodes[btn.id];
+            sendCommand(baseCmd + "1");
+
+            // Execute TRACER specific Logging and 0.5s Throttle
+            if (currentRobot === 'TRACER' && ['btn-up', 'btn-down', 'btn-left', 'btn-right'].includes(btn.id)) {
+                logToTerminal(`PRESSED: ${baseCmd.toUpperCase()}`);
+                
+                tracerDelayLock = true;
+                setTimeout(() => {
+                    tracerDelayLock = false;
+                }, 500); 
+            }
+        }
+
+        // Abstracted Button Release Logic
+        function handleButtonRelease(btn) {
+            if (btn.classList.contains('active')) {
+                btn.classList.remove('active');
+                sendCommand(btnCodes[btn.id] + "0");
+            }
+        }
+
+        // 1. Mouse & Touch Event Listeners
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
-            btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                
-                // If in TRACER mode, enforce 0.5 sec delay between button presses
-                if (currentRobot === 'TRACER' && tracerDelayLock) {
-                    return; // Ignore the press completely if the lock is active
-                }
-                
-                btn.classList.add('active');
-                
-                let baseCmd = btnCodes[btn.id];
-                sendCommand(baseCmd + "1");
-
-                // Execute TRACER specific Logging and 0.5s Throttle
-                if (currentRobot === 'TRACER') {
-                    // Only log human readable Direction
-                    logToTerminal(`PRESSED: ${baseCmd.toUpperCase()}`);
-                    
-                    tracerDelayLock = true;
-                    setTimeout(() => {
-                        tracerDelayLock = false;
-                    }, 500); // 0.5 sec delay
-                }
-                
-            }, {passive: false});
-
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                
-                // Only fire the release command if the button was actually active 
-                if (btn.classList.contains('active')) {
-                    btn.classList.remove('active');
-                    sendCommand(btnCodes[btn.id] + "0");
-                }
-            }, {passive: false});
+            // Touch Handlers
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); handleButtonPress(btn); }, {passive: false});
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); handleButtonRelease(btn); }, {passive: false});
+            btn.addEventListener('touchcancel', () => { handleButtonRelease(btn); });
             
-            btn.addEventListener('touchcancel', (e) => {
-                if (btn.classList.contains('active')) {
-                    btn.classList.remove('active');
-                    sendCommand(btnCodes[btn.id] + "0");
-                }
-            });
+            // Mouse Handlers
+            btn.addEventListener('mousedown', (e) => { e.preventDefault(); handleButtonPress(btn); });
+            btn.addEventListener('mouseup', (e) => { e.preventDefault(); handleButtonRelease(btn); });
+            btn.addEventListener('mouseleave', () => { handleButtonRelease(btn); }); // If mouse drags off button
         });
 
+        // 2. Keyboard Event Listeners (Arrow Keys)
+        window.addEventListener('keydown', (e) => {
+            if (keyMap[e.key]) {
+                e.preventDefault(); // Prevents page from scrolling when pressing arrows
+                if (!e.repeat) { // Prevents holding the key from spamming commands
+                    const targetBtn = document.getElementById(keyMap[e.key]);
+                    if (targetBtn) handleButtonPress(targetBtn);
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (keyMap[e.key]) {
+                e.preventDefault();
+                const targetBtn = document.getElementById(keyMap[e.key]);
+                if (targetBtn) handleButtonRelease(targetBtn);
+            }
+        });
+
+        // ==========================================
+        // JOYSTICK LOGIC (Left untouched)
+        // ==========================================
         let leftDir = "N";
         let rightDir = "N";
         let currentMoveCmd = "M_N"; 
