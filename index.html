@@ -58,7 +58,6 @@
             align-items: center;
             padding: 10px 20px;
             box-sizing: border-box;
-            /* Extra padding for iPhones with a notch */
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
         }
@@ -108,7 +107,7 @@
 
         .main-logo {
             max-width: 80%;
-            max-height: 120px;
+            max-height: 100px; /* Slightly reduced to fit the new button */
             object-fit: contain;
             filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
             pointer-events: none;
@@ -142,6 +141,25 @@
             text-align: center;
         }
         #status-text { color: #e74c3c; font-size: 14px; }
+
+        /* FULLSCREEN BUTTON */
+        #btn-fullscreen {
+            background-color: #34495e;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0px 3px 0px #2c3e50;
+            width: 100%;
+            margin-top: 5px;
+        }
+        #btn-fullscreen:active {
+            transform: translateY(3px);
+            box-shadow: 0px 0px 0px #2c3e50;
+        }
 
         /* BUTTON CLUSTERS */
         .button-cluster {
@@ -231,6 +249,7 @@
                 <div class="telemetry-label" style="margin-top: 5px;">Data Transmit</div>
                 <div id="readout">M_N</div>
             </div>
+            <button id="btn-fullscreen">⛶ FULLSCREEN</button>
         </div>
 
         <!-- RIGHT SIDE -->
@@ -249,6 +268,42 @@
     </div>
 
     <script>
+        // ==========================================
+        // FULLSCREEN API LOGIC
+        // ==========================================
+        const fullscreenBtn = document.getElementById('btn-fullscreen');
+        
+        fullscreenBtn.addEventListener('click', () => {
+            let docElm = document.documentElement;
+            let isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+
+            if (!isFullscreen) {
+                // Enter fullscreen
+                if (docElm.requestFullscreen) {
+                    docElm.requestFullscreen();
+                } else if (docElm.mozRequestFullScreen) {
+                    docElm.mozRequestFullScreen();
+                } else if (docElm.webkitRequestFullScreen) {
+                    docElm.webkitRequestFullScreen();
+                } else if (docElm.msRequestFullscreen) {
+                    docElm.msRequestFullscreen();
+                }
+                fullscreenBtn.innerText = "✖ EXIT FULLSCREEN";
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                fullscreenBtn.innerText = "⛶ FULLSCREEN";
+            }
+        });
+
         // ==========================================
         // WEB BLUETOOTH API
         // ==========================================
