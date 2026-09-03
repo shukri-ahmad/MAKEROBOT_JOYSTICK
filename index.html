@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#121212">
 
     <title>MAKEROBOT PRO Controller</title>
     <style>
@@ -23,6 +24,7 @@
             display: flex;
             height: 100vh;
             width: 100vw;
+            position: relative; 
         }
 
         /* PORTRAIT WARNING OVERLAY */
@@ -56,6 +58,8 @@
             align-items: center;
             padding: 10px 20px;
             box-sizing: border-box;
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
 
         .side-panel {
@@ -71,7 +75,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: space-evenly;
             align-items: center;
             height: 95%;
             background-color: #1e1e1e;
@@ -101,18 +105,17 @@
             box-shadow: 0px 0px 0px #d35400;
         }
 
-        /* LOGO TOGGLE STYLING */
+        /* LOGO AS FULLSCREEN BUTTON */
         .main-logo {
             max-width: 80%;
-            max-height: 120px;
+            max-height: 90px; 
             object-fit: contain;
             filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
-            cursor: pointer; /* Indicates it is clickable */
-            pointer-events: auto; /* Re-enabled click events */
-            transition: transform 0.1s ease;
+            cursor: pointer; 
+            transition: transform 0.1s;
         }
         .main-logo:active {
-            transform: scale(0.92); /* Subtle press animation */
+            transform: scale(0.92); 
         }
 
         .telemetry-box {
@@ -120,29 +123,30 @@
             background-color: #000;
             border: 1px solid #333;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px 10px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 3px;
         }
 
         .telemetry-label {
             color: #888;
-            font-size: 10px;
+            font-size: 9px;
             letter-spacing: 2px;
             text-transform: uppercase;
         }
 
-        #readout, #status-text {
+        #readout, #status-text, #telemetry-rx {
             color: #2ecc71;
             font-family: monospace;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             text-align: center;
         }
-        #status-text { color: #e74c3c; font-size: 14px; }
+        #status-text { color: #e74c3c; font-size: 13px; }
+        #telemetry-rx { color: #3498db; }
 
         /* BUTTON CLUSTERS */
         .button-cluster {
@@ -223,12 +227,16 @@
 
         <div class="center-panel">
             <button id="btn-connect">Connect BLITZ</button>
+            
             <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo" id="logo-fullscreen">
+            
             <div class="telemetry-box">
-                <div class="telemetry-label">Bluetooth Status</div>
+                <div class="telemetry-label">Status</div>
                 <div id="status-text">OFFLINE</div>
-                <div class="telemetry-label" style="margin-top: 5px;">Data Transmit</div>
+                <div class="telemetry-label" style="margin-top: 4px;">Sent Cmd</div>
                 <div id="readout">M_N</div>
+                <div class="telemetry-label" style="margin-top: 4px;">BLITZ DATA</div>
+                <div id="telemetry-rx">WAITING...</div>
             </div>
         </div>
 
@@ -247,57 +255,42 @@
     </div>
 
     <script>
-        // ==========================================
-        // LOGO FULLSCREEN TOGGLE
-        // ==========================================
-        const logo = document.getElementById('logo-fullscreen');
-
-        logo.addEventListener('click', () => {
-            const doc = document.documentElement;
-            const isFullscreen = document.fullscreenElement || 
-                                 document.webkitFullscreenElement || 
-                                 document.mozFullScreenElement || 
-                                 document.msFullscreenElement;
+        // FULLSCREEN TOGGLE VIA LOGO
+        const logoFullscreen = document.getElementById('logo-fullscreen');
+        logoFullscreen.addEventListener('click', () => {
+            let docElm = document.documentElement;
+            let isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
 
             if (!isFullscreen) {
-                // Enter fullscreen
-                if (doc.requestFullscreen) {
-                    doc.requestFullscreen();
-                } else if (doc.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-                    doc.webkitRequestFullscreen();
-                } else if (doc.mozRequestFullScreen) { /* Firefox */
-                    doc.mozRequestFullScreen();
-                } else if (doc.msRequestFullscreen) { /* IE/Edge */
-                    doc.msRequestFullscreen();
-                }
+                if (docElm.requestFullscreen) { docElm.requestFullscreen(); } 
+                else if (docElm.mozRequestFullScreen) { docElm.mozRequestFullScreen(); } 
+                else if (docElm.webkitRequestFullScreen) { docElm.webkitRequestFullScreen(); } 
+                else if (docElm.msRequestFullscreen) { docElm.msRequestFullscreen(); }
             } else {
-                // Exit fullscreen
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
+                if (document.exitFullscreen) { document.exitFullscreen(); } 
+                else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); } 
+                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
+                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
             }
         });
 
         // ==========================================
-        // WEB BLUETOOTH API
+        // WEB BLUETOOTH API (BIDIRECTIONAL)
         // ==========================================
         let bleDevice;
         let bleServer;
         let uartService;
         let rxCharacteristic; 
+        let txCharacteristic; 
 
         const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
         const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
         const connectBtn = document.getElementById('btn-connect');
         const readout = document.getElementById('readout');
         const statusText = document.getElementById('status-text');
+        const telemetryRx = document.getElementById('telemetry-rx');
 
         connectBtn.addEventListener('click', async () => {
             try {
@@ -314,10 +307,16 @@
                 statusText.innerText = "CONNECTING...";
                 bleServer = await bleDevice.gatt.connect();
                 uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
+                
                 rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
+
+                txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
+                await txCharacteristic.startNotifications();
+                txCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingTelemetry);
 
                 statusText.innerText = "CONNECTED";
                 statusText.style.color = "#2ecc71"; 
+                telemetryRx.innerText = "READY";
                 connectBtn.innerText = "DISCONNECT";
                 connectBtn.style.backgroundColor = "#27ae60";
                 connectBtn.style.boxShadow = "0px 4px 0px #1e8449";
@@ -329,13 +328,25 @@
             }
         });
 
+        function handleIncomingTelemetry(event) {
+            let value = event.target.value;
+            let decoder = new TextDecoder('utf-8');
+            let receivedString = decoder.decode(value).trim();
+            receivedString = receivedString.replace("#", "");
+
+            console.log("BLITZ DATA RECEIVED:", receivedString);
+            telemetryRx.innerText = receivedString;
+        }
+
         function onDisconnected() {
             statusText.innerText = "OFFLINE";
             statusText.style.color = "#e74c3c"; 
+            telemetryRx.innerText = "WAITING...";
             connectBtn.innerText = "Connect BLITZ";
             connectBtn.style.backgroundColor = "#e67e22";
             connectBtn.style.boxShadow = "0px 4px 0px #d35400";
             rxCharacteristic = null;
+            txCharacteristic = null;
         }
 
         async function sendCommand(cmd) {
@@ -358,30 +369,41 @@
         }
 
         // ==========================================
-        // CONTROLLER LOGIC
+        // CONTROLLER LOGIC (WITH FLOOD PROTECTION)
         // ==========================================
         const btnCodes = {
             'btn-up': 'U', 'btn-down': 'D', 'btn-left': 'L', 'btn-right': 'R',
             'btn-y': 'Y', 'btn-a': 'A', 'btn-x': 'X', 'btn-b': 'B'
         };
 
+        const buttonStates = {}; 
+
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                btn.classList.add('active');
-                sendCommand(btnCodes[btn.id] + "1");
+                if (!buttonStates[btn.id]) {
+                    buttonStates[btn.id] = true;
+                    btn.classList.add('active');
+                    sendCommand(btnCodes[btn.id] + "1");
+                }
             }, {passive: false});
 
             btn.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                btn.classList.remove('active');
-                sendCommand(btnCodes[btn.id] + "0");
+                if (buttonStates[btn.id]) {
+                    buttonStates[btn.id] = false;
+                    btn.classList.remove('active');
+                    sendCommand(btnCodes[btn.id] + "0");
+                }
             }, {passive: false});
             
             btn.addEventListener('touchcancel', (e) => {
-                btn.classList.remove('active');
-                sendCommand(btnCodes[btn.id] + "0");
+                if (buttonStates[btn.id]) {
+                    buttonStates[btn.id] = false;
+                    btn.classList.remove('active');
+                    sendCommand(btnCodes[btn.id] + "0");
+                }
             });
         });
 
