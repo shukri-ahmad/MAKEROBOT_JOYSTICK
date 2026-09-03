@@ -22,7 +22,7 @@
             background-image: radial-gradient(circle at 50% 50%, #1e1e1e 0%, #0a0a0a 100%);
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none; 
+            touch-action: none; /* Prevents browser gestures/scrolling */
             user-select: none;
             overflow: hidden;
             display: flex;
@@ -229,7 +229,7 @@
             box-shadow: 0px 4px 0px #0a0a0a, inset 0 2px 2px rgba(255,255,255,0.05);
             cursor: pointer;
             transition: all 0.1s ease;
-            user-select: none;
+            touch-action: none;
         }
         .btn-dpad:active, .btn-dpad.active {
             background: #222;
@@ -256,7 +256,7 @@
             align-items: center;
             box-shadow: 0px 5px 0px #050505, inset 0 2px 4px rgba(255,255,255,0.1);
             cursor: pointer;
-            user-select: none;
+            touch-action: none;
         }
         .btn-action:active, .btn-action.active {
             background: #1a1a1a;
@@ -277,6 +277,7 @@
             border: 2px solid #2a2a2a;
             box-shadow: inset 0px 0px 25px rgba(0,0,0,0.9), 0 5px 15px rgba(0,0,0,0.5);
             transition: opacity 0.3s ease;
+            touch-action: none;
         }
         .joystick-stick {
             width: 60px; height: 60px;
@@ -682,30 +683,29 @@
             'btn-tri': 'tri', 'btn-cross': 'cross', 'btn-sq': 'sq', 'btn-cir': 'cir'
         };
 
-        // Keyboard Arrow Mapping
+        // Added WASD & Arrow Key support
         const keyMap = {
-            'ArrowUp': 'btn-up',
-            'ArrowDown': 'btn-down',
-            'ArrowLeft': 'btn-left',
-            'ArrowRight': 'btn-right'
+            'ArrowUp': 'btn-up', 'w': 'btn-up', 'W': 'btn-up',
+            'ArrowDown': 'btn-down', 's': 'btn-down', 'S': 'btn-down',
+            'ArrowLeft': 'btn-left', 'a': 'btn-left', 'A': 'btn-left',
+            'ArrowRight': 'btn-right', 'd': 'btn-right', 'D': 'btn-right'
         };
 
         let tracerDelayLock = false;
 
-        // Abstracted Button Press Logic (Works for Touch, Mouse, and Keyboard)
+        // Unified Press Function
         function handleButtonPress(btn) {
             if (currentRobot === 'TRACER' && tracerDelayLock) {
                 return; // Enforce 0.5 sec delay lock
             }
             if (btn.classList.contains('active')) {
-                return; // Prevent repeating if already held down
+                return; // Prevent repeated triggers if held down
             }
             
             btn.classList.add('active');
             let baseCmd = btnCodes[btn.id];
             sendCommand(baseCmd + "1");
 
-            // Execute TRACER specific Logging and 0.5s Throttle
             if (currentRobot === 'TRACER' && ['btn-up', 'btn-down', 'btn-left', 'btn-right'].includes(btn.id)) {
                 logToTerminal(`PRESSED: ${baseCmd.toUpperCase()}`);
                 
@@ -716,7 +716,7 @@
             }
         }
 
-        // Abstracted Button Release Logic
+        // Unified Release Function
         function handleButtonRelease(btn) {
             if (btn.classList.contains('active')) {
                 btn.classList.remove('active');
@@ -724,25 +724,31 @@
             }
         }
 
-        // 1. Mouse & Touch Event Listeners
+        // 1. POINTER EVENTS (Handles Mouse, Touch, & Pen fluidly)
         const buttons = document.querySelectorAll('.btn');
         buttons.forEach(btn => {
-            // Touch Handlers
-            btn.addEventListener('touchstart', (e) => { e.preventDefault(); handleButtonPress(btn); }, {passive: false});
-            btn.addEventListener('touchend', (e) => { e.preventDefault(); handleButtonRelease(btn); }, {passive: false});
-            btn.addEventListener('touchcancel', () => { handleButtonRelease(btn); });
-            
-            // Mouse Handlers
-            btn.addEventListener('mousedown', (e) => { e.preventDefault(); handleButtonPress(btn); });
-            btn.addEventListener('mouseup', (e) => { e.preventDefault(); handleButtonRelease(btn); });
-            btn.addEventListener('mouseleave', () => { handleButtonRelease(btn); }); // If mouse drags off button
+            btn.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                btn.setPointerCapture(e.pointerId); // Tracks mouse even if dragged outside button
+                handleButtonPress(btn);
+            });
+            btn.addEventListener('pointerup', (e) => {
+                e.preventDefault();
+                handleButtonRelease(btn);
+                btn.releasePointerCapture(e.pointerId);
+            });
+            btn.addEventListener('pointercancel', (e) => {
+                e.preventDefault();
+                handleButtonRelease(btn);
+            });
         });
 
-        // 2. Keyboard Event Listeners (Arrow Keys)
+        // 2. KEYBOARD EVENTS
+        // Note: Click anywhere on the webpage once to give it focus before using keyboard
         window.addEventListener('keydown', (e) => {
             if (keyMap[e.key]) {
-                e.preventDefault(); // Prevents page from scrolling when pressing arrows
-                if (!e.repeat) { // Prevents holding the key from spamming commands
+                e.preventDefault(); // Stop window from scrolling
+                if (!e.repeat) { // Ignore held-down key repeating spam
                     const targetBtn = document.getElementById(keyMap[e.key]);
                     if (targetBtn) handleButtonPress(targetBtn);
                 }
@@ -757,8 +763,9 @@
             }
         });
 
+
         // ==========================================
-        // JOYSTICK LOGIC (Left untouched)
+        // JOYSTICK LOGIC (Upgraded to Pointer Events for Mouse Support)
         // ==========================================
         let leftDir = "N";
         let rightDir = "N";
@@ -789,43 +796,42 @@
             const maxRadius = 50; 
             const deadzone = 15;  
 
-            let activeTouchId = null;
+            let activePointerId = null;
 
             function resetStick() {
                 stick.style.transform = `translate(0px, 0px)`;
-                activeTouchId = null;
+                activePointerId = null;
                 
                 if (side === 'L') leftDir = "N";
                 if (side === 'R') rightDir = "N";
                 updateMovement();
             }
 
-            function handleTouch(e) {
+            function handlePointer(e) {
                 e.preventDefault();
                 
-                let touch = null;
-                for (let i = 0; i < e.changedTouches.length; i++) {
-                    if (e.type === 'touchstart' && activeTouchId === null) {
-                        activeTouchId = e.changedTouches[i].identifier;
-                    }
-                    if (e.changedTouches[i].identifier === activeTouchId) {
-                        touch = e.changedTouches[i];
-                        break;
-                    }
+                // On initial press, lock the pointer to this joystick
+                if (e.type === 'pointerdown' && activePointerId === null) {
+                    activePointerId = e.pointerId;
+                    base.setPointerCapture(e.pointerId);
                 }
-                if (!touch) return;
+                
+                // Ignore other touches/mice if we're already tracking one
+                if (e.pointerId !== activePointerId) return;
 
-                if (e.type === 'touchend' || e.type === 'touchcancel') {
+                if (e.type === 'pointerup' || e.type === 'pointercancel') {
                     resetStick();
+                    try { base.releasePointerCapture(e.pointerId); } catch(err){}
                     return;
                 }
 
+                // Calculate math using direct clientX and clientY (supported natively by pointer events)
                 const rect = base.getBoundingClientRect();
                 const centerX = rect.left + (rect.width / 2);
                 const centerY = rect.top + (rect.height / 2);
                 
-                let deltaX = touch.clientX - centerX;
-                let deltaY = touch.clientY - centerY;
+                let deltaX = e.clientX - centerX;
+                let deltaY = e.clientY - centerY;
 
                 let distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
                 let angleRad = Math.atan2(deltaY, deltaX);
@@ -859,10 +865,10 @@
                 }
             }
 
-            base.addEventListener('touchstart', handleTouch, {passive: false});
-            base.addEventListener('touchmove', handleTouch, {passive: false});
-            base.addEventListener('touchend', handleTouch, {passive: false});
-            base.addEventListener('touchcancel', handleTouch, {passive: false});
+            base.addEventListener('pointerdown', handlePointer);
+            base.addEventListener('pointermove', handlePointer);
+            base.addEventListener('pointerup', handlePointer);
+            base.addEventListener('pointercancel', handlePointer);
         }
 
         setupJoystick('joy-left', 'stick-left', 'L');
