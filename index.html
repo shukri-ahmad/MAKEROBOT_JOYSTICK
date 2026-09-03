@@ -602,10 +602,8 @@
         // 2-LINE TELEMETRY VARIABLES
         const telemetryRx = document.getElementById('telemetry-rx');
         let telemetryHistory = [];
-        let telemetryScrollIndex = 0;
-        let telemetryScrollTimer = null;
 
-        // Function to render the 2 lines of telemetry
+        // Function to render exactly 2 lines of telemetry max
         function renderTelemetry() {
             if (telemetryHistory.length === 0) {
                 telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
@@ -613,22 +611,6 @@
                 telemetryRx.innerHTML = telemetryHistory[0] + "<br>&nbsp;";
             } else if (telemetryHistory.length === 2) {
                 telemetryRx.innerHTML = telemetryHistory[0] + "<br>" + telemetryHistory[1];
-            } else {
-                // If more than 2, show the scrolling window
-                let line1 = telemetryHistory[telemetryScrollIndex];
-                let line2 = telemetryHistory[(telemetryScrollIndex + 1) % telemetryHistory.length];
-                telemetryRx.innerHTML = line1 + "<br>" + line2;
-            }
-        }
-
-        function startTelemetryScroll() {
-            if (!telemetryScrollTimer) {
-                telemetryScrollTimer = setInterval(() => {
-                    if (telemetryHistory.length > 2) {
-                        telemetryScrollIndex = (telemetryScrollIndex + 1) % telemetryHistory.length;
-                        renderTelemetry();
-                    }
-                }, 2000); // Scrolls every 2 seconds
             }
         }
 
@@ -677,31 +659,22 @@
             let receivedString = decoder.decode(value).trim();
             receivedString = receivedString.replace("#", "");
             
-            // Push to history and constrain to 50 max items to save memory
+            // Push to history and keep max 2 elements
             telemetryHistory.push(receivedString);
-            if (telemetryHistory.length > 50) {
+            if (telemetryHistory.length > 2) {
                 telemetryHistory.shift(); 
             }
             
             renderTelemetry();
-            
-            if (telemetryHistory.length > 2) {
-                startTelemetryScroll();
-            }
         }
 
         function onDisconnected() {
             statusText.innerText = "OFFLINE";
             statusText.style.color = "#e74c3c"; 
             
-            // Reset Telemetry display & timers
+            // Reset Telemetry display
             telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
             telemetryHistory = [];
-            telemetryScrollIndex = 0;
-            if (telemetryScrollTimer) {
-                clearInterval(telemetryScrollTimer);
-                telemetryScrollTimer = null;
-            }
             
             connectBtn.innerText = `Connect ${currentRobot}`;
             
