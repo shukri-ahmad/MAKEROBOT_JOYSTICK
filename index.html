@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA / FULLSCREEN META TAGS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#121212">
+
     <title>MAKEROBOT PRO Controller</title>
     <style>
         /* BASE STYLES */
@@ -51,6 +58,9 @@
             align-items: center;
             padding: 10px 20px;
             box-sizing: border-box;
+            /* Extra padding for iPhones with a notch */
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
 
         .side-panel {
@@ -133,7 +143,7 @@
         }
         #status-text { color: #e74c3c; font-size: 14px; }
 
-        /* BUTTON CLUSTERS (Smaller & Tighter) */
+        /* BUTTON CLUSTERS */
         .button-cluster {
             display: grid;
             grid-template-columns: 45px 45px 45px; 
@@ -164,7 +174,7 @@
         .btn-right { grid-column: 3; grid-row: 2; }
         .btn-bottom { grid-column: 2; grid-row: 3; }
 
-        /* JOYSTICKS (Bigger) */
+        /* JOYSTICKS */
         .joystick-base {
             width: 160px; 
             height: 160px;
@@ -240,22 +250,6 @@
 
     <script>
         // ==========================================
-        // FULLSCREEN API
-        // ==========================================
-        function requestFullScreen() {
-            let docElm = document.documentElement;
-            if (docElm.requestFullscreen) {
-                docElm.requestFullscreen();
-            } else if (docElm.mozRequestFullScreen) { // Firefox
-                docElm.mozRequestFullScreen();
-            } else if (docElm.webkitRequestFullScreen) { // Chrome, Safari and Opera
-                docElm.webkitRequestFullScreen();
-            } else if (docElm.msRequestFullscreen) { // IE/Edge
-                docElm.msRequestFullscreen();
-            }
-        }
-
-        // ==========================================
         // WEB BLUETOOTH API
         // ==========================================
         let bleDevice;
@@ -275,14 +269,10 @@
                 statusText.innerText = "SCANNING...";
                 statusText.style.color = "#f39c12"; 
                 
-                // 1. Trigger Bluetooth FIRST (Uses the physical tap for security)
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'BBC micro:bit' }],
                     optionalServices: [UART_SERVICE_UUID]
                 });
-
-                // 2. Trigger Fullscreen AFTER the device menu pops up
-                try { requestFullScreen(); } catch(e) { console.log("Fullscreen blocked"); }
 
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
 
