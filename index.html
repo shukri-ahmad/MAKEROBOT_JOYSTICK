@@ -125,6 +125,13 @@
         }
 
         /* CENTER PANEL UI */
+        .connect-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         #btn-connect {
             width: 100%;
             background: linear-gradient(145deg, #333, #222);
@@ -145,6 +152,24 @@
             box-shadow: 0px 0px 0px #111;
             background: linear-gradient(145deg, #222, #111);
         }
+
+        #btn-reconnect {
+            display: none; /* Hidden until known device is found */
+            width: 90%;
+            background: transparent;
+            color: #888;
+            border: 1px dashed #555;
+            padding: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        #btn-reconnect:active { background: #222; }
 
         /* XBOX-STYLE HOME BUTTON (LOGO) */
         .main-logo {
@@ -221,7 +246,6 @@
             transition: all 0.3s ease;
         }
 
-        /* COMMON BUTTON POSITIONING */
         .btn-top { grid-column: 2; grid-row: 1; }
         .btn-left { grid-column: 1; grid-row: 2; }
         .btn-right { grid-column: 3; grid-row: 2; }
@@ -385,6 +409,9 @@
         body.tracer-theme #btn-connect:active {
             background: linear-gradient(145deg, #ddd, #ccc); box-shadow: 0px 0px 0px #bbb;
         }
+        body.tracer-theme #btn-reconnect { color: #888; border-color: #ccc; }
+        body.tracer-theme #btn-reconnect:active { background: #eee; }
+        
         body.tracer-theme .main-logo {
             background: radial-gradient(circle at 35% 35%, #ffffff, #c0c0c0);
             border-color: #aaa; box-shadow: 0 8px 15px rgba(0,0,0,0.2), inset 0 -4px 10px rgba(0,0,0,0.1);
@@ -433,7 +460,10 @@
                 <div class="mode-btn" id="mode-tracer">TRACER</div>
             </div>
 
-            <button id="btn-connect">Connect BLITZ</button>
+            <div class="connect-container">
+                <button id="btn-connect">Connect BLITZ</button>
+                <button id="btn-reconnect">Reconnect Last</button>
+            </div>
             
             <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo" id="logo-fullscreen">
             
@@ -443,7 +473,6 @@
                 <div class="telemetry-label" style="margin-top: 2px;">Sent Cmd</div>
                 <div id="readout">M_N</div>
                 <div class="telemetry-label" style="margin-top: 2px;" id="rx-label">BLITZ DATA</div>
-                <!-- 2 Line Output area -->
                 <div id="telemetry-rx">WAITING...<br>&nbsp;</div>
             </div>
         </div>
@@ -491,6 +520,7 @@
         const terminalContainer = document.getElementById('terminal-container');
         
         const connectBtn = document.getElementById('btn-connect');
+        const reconnectBtn = document.getElementById('btn-reconnect');
         const rxLabel = document.getElementById('rx-label');
         const metaThemeColor = document.getElementById('meta-theme-color');
         
@@ -584,13 +614,14 @@
         });
 
         // ==========================================
-        // WEB BLUETOOTH API (BIDIRECTIONAL)
+        // WEB BLUETOOTH API (BIDIRECTIONAL & AUTO-RECONNECT)
         // ==========================================
         let bleDevice;
         let bleServer;
         let uartService;
         let rxCharacteristic; 
         let txCharacteristic; 
+        let knownDevice = null; // Stores previously connected device
 
         const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
         const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
@@ -599,12 +630,25 @@
         const readout = document.getElementById('readout');
         const statusText = document.getElementById('status-text');
         
-        // ==========================================
-        // FIXED 2-LINE TELEMETRY DATA STRUCTURE
-        // ==========================================
         const telemetryRx = document.getElementById('telemetry-rx');
-        let telemetryData = {}; // Stores key-value pairs (e.g. { "BAT": "BAT: 99%" })
-        let telemetryOrder = []; // Keeps track of insertion order, max 2 elements
+        let telemetryData = {}; 
+        let telemetryOrder = []; 
+
+        // ON LOAD: Check for permitted devices
+        window.addEventListener('load', async () => {
+            if (navigator.bluetooth && navigator.bluetooth.getDevices) {
+                try {
+                    const devices = await navigator.bluetooth.getDevices();
+                    if (devices.length > 0) {
+                        knownDevice = devices[0];
+                        reconnectBtn.style.display = 'block';
+                        reconnectBtn.innerText = `Reconnect ${knownDevice.name || 'Last Robot'}`;
+                    }
+                } catch (err) {
+                    console.log("Device auto-discovery not supported", err);
+                }
+            }
+        });
 
         function renderTelemetry() {
             if (telemetryOrder.length === 0) {
@@ -616,42 +660,72 @@
             }
         }
 
+        // Shared Connection Logic
+        async function connectToDevice(device) {
+            bleDevice = device;
+            bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+            statusText.innerText = "CONNECTING...";
+            statusText.style.color = "#f39c12";
+
+            bleServer = await bleDevice.gatt.connect();
+            uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
+            
+            rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
+            txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
+            await txCharacteristic.startNotifications();
+            txCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingTelemetry);
+
+            statusText.innerText = "CONNECTED";
+            statusText.style.color = "#2ecc71"; 
+            telemetryRx.innerHTML = "READY<br>&nbsp;";
+            
+            connectBtn.innerText = "DISCONNECT";
+            connectBtn.style.background = "linear-gradient(145deg, #27ae60, #1e8449)";
+            connectBtn.style.borderColor = "#1e8449";
+            connectBtn.style.boxShadow = "0px 4px 0px #145a32";
+            reconnectBtn.style.display = 'none'; // Hide reconnect btn while connected
+            
+            knownDevice = bleDevice; // Update known device memory
+        }
+
+        // Main Connect / Disconnect Button
         connectBtn.addEventListener('click', async () => {
-            if (rxCharacteristic) return;
+            // Act as DISCONNECT if currently connected
+            if (rxCharacteristic && bleDevice && bleDevice.gatt.connected) {
+                bleDevice.gatt.disconnect();
+                return;
+            }
 
             try {
                 statusText.innerText = "SCANNING...";
                 statusText.style.color = "#f39c12"; 
                 
-                bleDevice = await navigator.bluetooth.requestDevice({
+                let device = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'BBC micro:bit' }],
                     optionalServices: [UART_SERVICE_UUID]
                 });
 
-                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
-
-                statusText.innerText = "CONNECTING...";
-                bleServer = await bleDevice.gatt.connect();
-                uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
-                
-                rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
-                txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
-                await txCharacteristic.startNotifications();
-                txCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingTelemetry);
-
-                statusText.innerText = "CONNECTED";
-                statusText.style.color = "#2ecc71"; 
-                telemetryRx.innerHTML = "READY<br>&nbsp;";
-                
-                connectBtn.innerText = "DISCONNECT";
-                connectBtn.style.background = "linear-gradient(145deg, #27ae60, #1e8449)";
-                connectBtn.style.borderColor = "#1e8449";
-                connectBtn.style.boxShadow = "0px 4px 0px #145a32";
-
+                await connectToDevice(device);
             } catch (error) {
                 console.error('Bluetooth Error:', error);
                 statusText.innerText = "FAILED";
                 statusText.style.color = "#e74c3c";
+                if (knownDevice) reconnectBtn.style.display = 'block';
+            }
+        });
+
+        // Quick Reconnect Button
+        reconnectBtn.addEventListener('click', async () => {
+            if (!knownDevice) return;
+            try {
+                reconnectBtn.style.display = 'none'; // hide while trying
+                await connectToDevice(knownDevice);
+            } catch (error) {
+                console.error('Reconnect Error:', error);
+                statusText.innerText = "FAILED";
+                statusText.style.color = "#e74c3c";
+                reconnectBtn.style.display = 'block'; // bring back if failed
             }
         });
 
@@ -661,8 +735,6 @@
             let receivedString = decoder.decode(value).trim();
             receivedString = receivedString.replace("#", "");
             
-            // SMART LABEL EXTRACTION 
-            // Extracts string before first ':' or '='. If none exist, takes the first word.
             let label = receivedString;
             let match = receivedString.match(/^([^:=]+)[:=]/);
             if (match) {
@@ -671,18 +743,14 @@
                 label = receivedString.split(' ')[0].trim(); 
             }
             
-            // Manage the 2-line fixed display logic
             if (!telemetryOrder.includes(label)) {
                 telemetryOrder.push(label);
-                
-                // If we exceed 2 lines, remove the oldest one
                 if (telemetryOrder.length > 2) {
                     let oldLabel = telemetryOrder.shift();
                     delete telemetryData[oldLabel];
                 }
             }
             
-            // Update the string payload for this specific label
             telemetryData[label] = receivedString;
             renderTelemetry();
         }
@@ -691,7 +759,6 @@
             statusText.innerText = "OFFLINE";
             statusText.style.color = "#e74c3c"; 
             
-            // Reset Telemetry display & Memory
             telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
             telemetryData = {};
             telemetryOrder = [];
@@ -710,6 +777,12 @@
             
             rxCharacteristic = null;
             txCharacteristic = null;
+
+            // Bring back reconnect button if we remember a device
+            if (knownDevice) {
+                reconnectBtn.style.display = 'block';
+                reconnectBtn.innerText = `Reconnect ${knownDevice.name || 'Last Robot'}`;
+            }
         }
 
         async function sendCommand(cmd) {
