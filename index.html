@@ -137,24 +137,25 @@
             background: linear-gradient(145deg, #333, #222);
             color: #ddd;
             border: 1px solid #444;
+            border-top: 1px solid #555;
             padding: 10px;
             font-size: 14px;
             font-weight: bold;
             border-radius: 25px;
             cursor: pointer;
-            box-shadow: 0px 4px 0px #111;
+            box-shadow: 0px 6px 0px #111, 0px 8px 15px rgba(0,0,0,0.5);
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.1s;
         }
         #btn-connect:active {
-            transform: translateY(4px);
-            box-shadow: 0px 0px 0px #111;
+            transform: translateY(6px);
+            box-shadow: 0px 0px 0px #111, 0px 2px 5px rgba(0,0,0,0.5);
             background: linear-gradient(145deg, #222, #111);
         }
 
         #btn-reconnect {
-            display: none; /* Hidden until known device is found */
+            display: none; 
             width: 90%;
             background: transparent;
             color: #888;
@@ -177,26 +178,29 @@
             height: 90px;
             padding: 12px; 
             box-sizing: border-box;
-            background: radial-gradient(circle at 35% 35%, #4a4a4a, #0a0a0a);
+            background: radial-gradient(circle at 35% 35%, #555, #0a0a0a);
             border: 3px solid #888;
+            border-top: 3px solid #aaa;
+            border-bottom: 3px solid #666;
             border-radius: 50%;
             object-fit: contain;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.9), 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.9), 
                         inset 0 -4px 10px rgba(0,0,0,0.6), 
-                        inset 0 3px 5px rgba(255,255,255,0.3);
+                        inset 0 4px 6px rgba(255,255,255,0.4);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.1s ease;
         }
         .main-logo:active {
-            transform: scale(0.92);
+            transform: scale(0.92) translateY(4px);
             border-color: #555;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.9), inset 0 6px 12px rgba(0,0,0,0.9);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.9), inset 0 8px 15px rgba(0,0,0,0.9);
         }
 
         .telemetry-box {
             width: 100%;
             background-color: #050505;
             border: 1px solid #222;
+            border-bottom: 1px solid #333;
             border-radius: 12px;
             padding: 8px;
             box-sizing: border-box;
@@ -204,7 +208,7 @@
             flex-direction: column;
             align-items: center;
             gap: 2px;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,1);
+            box-shadow: inset 0 4px 10px rgba(0,0,0,1), 0 2px 3px rgba(255,255,255,0.05);
             transition: all 0.3s ease;
         }
 
@@ -226,7 +230,7 @@
         
         #telemetry-rx { 
             color: #3498db; 
-            min-height: 38px; /* Force 2-line height */
+            min-height: 38px; 
             line-height: 1.2;
             display: flex;
             flex-direction: column;
@@ -251,26 +255,34 @@
         .btn-right { grid-column: 3; grid-row: 2; }
         .btn-bottom { grid-column: 2; grid-row: 3; }
 
-        /* D-PAD STYLING */
+        /* 3D D-PAD STYLING */
         .btn-dpad {
             background: linear-gradient(145deg, #3a3a3a, #222);
             border-radius: 8px;
-            border: 1px solid #1a1a1a;
+            border: 1px solid #111;
+            border-top: 1px solid #444; /* Top highlight edge */
             color: #888;
             font-size: 18px; 
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0px 4px 0px #0a0a0a, inset 0 2px 2px rgba(255,255,255,0.05);
+            /* 6px solid shadow for physical height + soft ambient shadow + inner top highlight */
+            box-shadow: 0px 6px 0px #0a0a0a, 
+                        0px 10px 15px rgba(0,0,0,0.6), 
+                        inset 0 2px 3px rgba(255,255,255,0.1);
             cursor: pointer;
-            transition: all 0.1s ease;
+            transition: transform 0.1s, box-shadow 0.1s;
             touch-action: none;
         }
         .btn-dpad:active, .btn-dpad.active {
             background: #222;
-            box-shadow: 0px 0px 0px #0a0a0a, inset 0 4px 8px rgba(0,0,0,0.8);
-            transform: translateY(4px);
+            /* Push down exact height of the 6px solid shadow */
+            transform: translateY(6px);
+            box-shadow: 0px 0px 0px #0a0a0a, 
+                        0px 2px 4px rgba(0,0,0,0.6), 
+                        inset 0 4px 10px rgba(0,0,0,0.9);
             color: #fff;
+            border-top: 1px solid #111; /* Remove top highlight on press */
         }
 
         /* ENLARGED D-PAD FOR TRACER MODE */
@@ -281,22 +293,29 @@
         }
         .large-dpad .btn-dpad { font-size: 26px; border-radius: 12px; }
 
-        /* ACTION BUTTON STYLING */
+        /* 3D ACTION BUTTON STYLING */
         .btn-action {
             background: linear-gradient(145deg, #333, #1a1a1a);
             border-radius: 50%;
-            border: 1px solid #111;
+            border: 1px solid #000;
+            border-top: 1px solid #444;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0px 5px 0px #050505, inset 0 2px 4px rgba(255,255,255,0.1);
+            box-shadow: 0px 6px 0px #050505, 
+                        0px 10px 15px rgba(0,0,0,0.6), 
+                        inset 0 2px 4px rgba(255,255,255,0.15);
             cursor: pointer;
             touch-action: none;
+            transition: transform 0.1s, box-shadow 0.1s;
         }
         .btn-action:active, .btn-action.active {
             background: #1a1a1a;
-            box-shadow: 0px 0px 0px #050505, inset 0 4px 8px rgba(0,0,0,0.8);
-            transform: translateY(5px);
+            transform: translateY(6px);
+            box-shadow: 0px 0px 0px #050505, 
+                        0px 2px 4px rgba(0,0,0,0.6), 
+                        inset 0 6px 12px rgba(0,0,0,0.9);
+            border-top: 1px solid #000;
         }
 
         #btn-tri { color: #10eb71; font-size: 20px; } 
@@ -304,30 +323,37 @@
         #btn-cross { color: #5976eb; font-size: 20px; } 
         #btn-sq { color: #df55a3; font-size: 24px; } 
 
-        /* JOYSTICKS */
+        /* 3D JOYSTICKS */
         .joystick-base {
             width: 160px; height: 160px;
             background-color: #151515;
             border-radius: 50%; position: relative;
             border: 2px solid #2a2a2a;
-            box-shadow: inset 0px 0px 25px rgba(0,0,0,0.9), 0 5px 15px rgba(0,0,0,0.5);
+            /* Inner crater shadow + bottom rim highlight */
+            box-shadow: inset 0px 8px 25px rgba(0,0,0,0.9), 
+                        0 2px 3px rgba(255,255,255,0.05);
             transition: opacity 0.3s ease;
             touch-action: none;
         }
         .joystick-stick {
             width: 60px; height: 60px;
-            background: radial-gradient(circle at center, #444 30%, #1a1a1a 90%);
+            /* Taller looking dome gradient */
+            background: radial-gradient(circle at 35% 35%, #5a5a5a 0%, #1a1a1a 80%);
             border-radius: 50%; position: absolute;
             top: 50px; left: 50px;
             border: 2px solid #111;
-            box-shadow: 0px 8px 15px rgba(0,0,0,0.6), inset 0px 2px 5px rgba(255,255,255,0.15);
+            /* Tall drop shadow + bright top inner highlight */
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.8), 
+                        inset 0px 2px 6px rgba(255,255,255,0.25);
             pointer-events: none; transition: transform 0.05s linear;
         }
         .joystick-stick::after {
             content: ''; position: absolute;
             top: 5px; left: 5px; right: 5px; bottom: 5px;
             border-radius: 50%; border: 2px solid #222;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            /* Beveled ring look */
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.7), 
+                        0 1px 2px rgba(255,255,255,0.1);
         }
 
         /* TERMINAL (RIGHT SIDE - TRACER MODE ONLY) */
@@ -374,9 +400,10 @@
             font-size: 10px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 0 #c0392b;
+            box-shadow: 0 3px 0 #c0392b;
+            transition: all 0.1s;
         }
-        .btn-clear:active { transform: translateY(2px); box-shadow: 0 0 0 #c0392b; }
+        .btn-clear:active { transform: translateY(3px); box-shadow: 0 0 0 #c0392b; }
 
         /* ==========================================
            TRACER LIGHT THEME OVERRIDES
@@ -393,7 +420,7 @@
         body.tracer-theme .telemetry-box {
             background-color: #fff;
             border-color: #ccc;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.08);
         }
         body.tracer-theme .telemetry-label { color: #999; }
         body.tracer-theme .robot-selector { background: #e0e0e0; border-color: #d0d0d0; }
@@ -404,26 +431,37 @@
         }
         body.tracer-theme #btn-connect {
             background: linear-gradient(145deg, #eee, #ddd);
-            color: #333; border-color: #ccc; box-shadow: 0px 4px 0px #bbb;
+            color: #333; border-color: #ccc; border-top: 1px solid #fff;
+            box-shadow: 0px 6px 0px #bbb, 0px 8px 15px rgba(0,0,0,0.1);
         }
         body.tracer-theme #btn-connect:active {
-            background: linear-gradient(145deg, #ddd, #ccc); box-shadow: 0px 0px 0px #bbb;
+            background: linear-gradient(145deg, #ddd, #ccc); 
+            box-shadow: 0px 0px 0px #bbb, 0px 2px 5px rgba(0,0,0,0.1);
+            border-top: 1px solid #ccc;
         }
         body.tracer-theme #btn-reconnect { color: #888; border-color: #ccc; }
         body.tracer-theme #btn-reconnect:active { background: #eee; }
         
         body.tracer-theme .main-logo {
             background: radial-gradient(circle at 35% 35%, #ffffff, #c0c0c0);
-            border-color: #aaa; box-shadow: 0 8px 15px rgba(0,0,0,0.2), inset 0 -4px 10px rgba(0,0,0,0.1);
+            border-color: #aaa; border-top: 3px solid #fff; border-bottom: 3px solid #999;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 -4px 10px rgba(0,0,0,0.1);
         }
+        
+        /* TRACER 3D Light D-PAD */
         body.tracer-theme .btn-dpad {
             background: linear-gradient(145deg, #ffffff, #e6e6e6);
-            border-color: #ccc; color: #555;
-            box-shadow: 0px 5px 0px #bbb, inset 0 2px 2px rgba(255,255,255,1);
+            border-color: #ccc; border-top: 1px solid #fff; color: #555;
+            box-shadow: 0px 6px 0px #a0a0a0, 
+                        0px 10px 15px rgba(0,0,0,0.15), 
+                        inset 0 2px 4px rgba(255,255,255,0.8);
         }
         body.tracer-theme .btn-dpad:active, body.tracer-theme .btn-dpad.active {
             background: #e6e6e6; color: #111;
-            box-shadow: 0px 0px 0px #bbb, inset 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0px 0px 0px #a0a0a0, 
+                        0px 2px 5px rgba(0,0,0,0.1), 
+                        inset 0 4px 10px rgba(0,0,0,0.15);
+            border-top: 1px solid #ccc;
         }
         body.tracer-theme .terminal-container { background: #fff; border-color: #ccc; box-shadow: inset 0px 0px 10px rgba(0,0,0,0.05); }
         body.tracer-theme .terminal-output { color: #27ae60; }
@@ -621,7 +659,7 @@
         let uartService;
         let rxCharacteristic; 
         let txCharacteristic; 
-        let knownDevice = null; // Stores previously connected device
+        let knownDevice = null; 
 
         const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
         const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
@@ -634,7 +672,6 @@
         let telemetryData = {}; 
         let telemetryOrder = []; 
 
-        // ON LOAD: Check for permitted devices
         window.addEventListener('load', async () => {
             if (navigator.bluetooth && navigator.bluetooth.getDevices) {
                 try {
@@ -660,7 +697,6 @@
             }
         }
 
-        // Shared Connection Logic
         async function connectToDevice(device) {
             bleDevice = device;
             bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
@@ -683,15 +719,13 @@
             connectBtn.innerText = "DISCONNECT";
             connectBtn.style.background = "linear-gradient(145deg, #27ae60, #1e8449)";
             connectBtn.style.borderColor = "#1e8449";
-            connectBtn.style.boxShadow = "0px 4px 0px #145a32";
-            reconnectBtn.style.display = 'none'; // Hide reconnect btn while connected
+            connectBtn.style.boxShadow = "0px 6px 0px #145a32, 0px 8px 15px rgba(0,0,0,0.5)";
+            reconnectBtn.style.display = 'none'; 
             
-            knownDevice = bleDevice; // Update known device memory
+            knownDevice = bleDevice; 
         }
 
-        // Main Connect / Disconnect Button
         connectBtn.addEventListener('click', async () => {
-            // Act as DISCONNECT if currently connected
             if (rxCharacteristic && bleDevice && bleDevice.gatt.connected) {
                 bleDevice.gatt.disconnect();
                 return;
@@ -715,17 +749,16 @@
             }
         });
 
-        // Quick Reconnect Button
         reconnectBtn.addEventListener('click', async () => {
             if (!knownDevice) return;
             try {
-                reconnectBtn.style.display = 'none'; // hide while trying
+                reconnectBtn.style.display = 'none'; 
                 await connectToDevice(knownDevice);
             } catch (error) {
                 console.error('Reconnect Error:', error);
                 statusText.innerText = "FAILED";
                 statusText.style.color = "#e74c3c";
-                reconnectBtn.style.display = 'block'; // bring back if failed
+                reconnectBtn.style.display = 'block'; 
             }
         });
 
@@ -768,17 +801,16 @@
             if(currentRobot === 'TRACER') {
                 connectBtn.style.background = "linear-gradient(145deg, #eee, #ddd)";
                 connectBtn.style.borderColor = "#ccc";
-                connectBtn.style.boxShadow = "0px 4px 0px #bbb";
+                connectBtn.style.boxShadow = "0px 6px 0px #bbb, 0px 8px 15px rgba(0,0,0,0.1)";
             } else {
                 connectBtn.style.background = "linear-gradient(145deg, #333, #222)";
                 connectBtn.style.borderColor = "#444";
-                connectBtn.style.boxShadow = "0px 4px 0px #111";
+                connectBtn.style.boxShadow = "0px 6px 0px #111, 0px 8px 15px rgba(0,0,0,0.5)";
             }
             
             rxCharacteristic = null;
             txCharacteristic = null;
 
-            // Bring back reconnect button if we remember a device
             if (knownDevice) {
                 reconnectBtn.style.display = 'block';
                 reconnectBtn.innerText = `Reconnect ${knownDevice.name || 'Last Robot'}`;
@@ -822,12 +854,8 @@
         let tracerDelayLock = false;
 
         function handleButtonPress(btn) {
-            if (currentRobot === 'TRACER' && tracerDelayLock) {
-                return; 
-            }
-            if (btn.classList.contains('active')) {
-                return; 
-            }
+            if (currentRobot === 'TRACER' && tracerDelayLock) return; 
+            if (btn.classList.contains('active')) return; 
             
             btn.classList.add('active');
             let baseCmd = btnCodes[btn.id];
