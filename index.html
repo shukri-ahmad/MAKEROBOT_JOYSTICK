@@ -145,4 +145,975 @@
             font-weight: bold;
             color: #666;
             cursor: pointer;
-            transition
+            transition: all 0.2s ease;
+        }
+        .mode-btn.active {
+            background: linear-gradient(145deg, #3a3a3a, #222);
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+        }
+
+        /* CENTER PANEL UI */
+        .connect-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #btn-connect {
+            width: 100%;
+            background: linear-gradient(145deg, #333, #222);
+            color: #ddd;
+            border: 1px solid #444;
+            border-top: 1px solid #555;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0px 6px 0px #111, 0px 8px 15px rgba(0,0,0,0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.1s;
+        }
+        #btn-connect:active {
+            transform: translateY(6px);
+            box-shadow: 0px 0px 0px #111, 0px 2px 5px rgba(0,0,0,0.5);
+            background: linear-gradient(145deg, #222, #111);
+        }
+
+        #btn-reconnect {
+            display: none; 
+            width: 90%;
+            background: transparent;
+            color: #888;
+            border: 1px dashed #555;
+            padding: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        #btn-reconnect:active { background: #222; }
+
+        /* XBOX-STYLE HOME BUTTON (LOGO) */
+        .main-logo {
+            width: 90px;
+            height: 90px;
+            padding: 12px; 
+            box-sizing: border-box;
+            background: radial-gradient(circle at 35% 35%, #555, #0a0a0a);
+            border: 3px solid #888;
+            border-top: 3px solid #aaa;
+            border-bottom: 3px solid #666;
+            border-radius: 50%;
+            object-fit: contain;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.9), 
+                        inset 0 -4px 10px rgba(0,0,0,0.6), 
+                        inset 0 4px 6px rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .main-logo:active {
+            transform: scale(0.92) translateY(4px);
+            border-color: #555;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.9), inset 0 8px 15px rgba(0,0,0,0.9);
+        }
+
+        .telemetry-box {
+            width: 100%;
+            background-color: #050505;
+            border: 1px solid #222;
+            border-bottom: 1px solid #333;
+            border-radius: 12px;
+            padding: 8px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,1), 0 2px 3px rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .telemetry-label {
+            color: #666;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        #readout, #telemetry-rx {
+            color: #2ecc71;
+            font-family: monospace;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        #telemetry-rx { 
+            color: #3498db; 
+            min-height: 38px; 
+            line-height: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        #status-text { color: #e74c3c; font-size: 12px; font-weight: bold; font-family: monospace; }
+
+        /* BUTTON CLUSTERS */
+        .button-cluster {
+            display: grid;
+            grid-template-columns: 50px 50px 50px; 
+            grid-template-rows: 50px 50px 50px;
+            gap: 4px; 
+            transition: all 0.3s ease;
+        }
+
+        .btn-top { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-right { grid-column: 3; grid-row: 2; }
+        .btn-bottom { grid-column: 2; grid-row: 3; }
+
+        /* 3D D-PAD STYLING */
+        .btn-dpad {
+            background: linear-gradient(145deg, #3a3a3a, #222);
+            border-radius: 8px;
+            border: 1px solid #111;
+            border-top: 1px solid #444;
+            color: #888;
+            font-size: 18px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 6px 0px #0a0a0a, 
+                        0px 10px 15px rgba(0,0,0,0.6), 
+                        inset 0 2px 3px rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: none;
+        }
+        .btn-dpad:active, .btn-dpad.active {
+            background: #222;
+            transform: translateY(6px);
+            box-shadow: 0px 0px 0px #0a0a0a, 
+                        0px 2px 4px rgba(0,0,0,0.6), 
+                        inset 0 4px 10px rgba(0,0,0,0.9);
+            color: #fff;
+            border-top: 1px solid #111; 
+        }
+
+        /* ENLARGED D-PAD FOR TRACER MODE */
+        .large-dpad {
+            grid-template-columns: 75px 75px 75px !important;
+            grid-template-rows: 75px 75px 75px !important;
+            gap: 6px !important;
+        }
+        .large-dpad .btn-dpad { font-size: 26px; border-radius: 12px; }
+
+        /* 3D ACTION BUTTON STYLING */
+        .btn-action {
+            background: linear-gradient(145deg, #333, #1a1a1a);
+            border-radius: 50%;
+            border: 1px solid #000;
+            border-top: 1px solid #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 6px 0px #050505, 
+                        0px 10px 15px rgba(0,0,0,0.6), 
+                        inset 0 2px 4px rgba(255,255,255,0.15);
+            cursor: pointer;
+            touch-action: none;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn-action:active, .btn-action.active {
+            background: #1a1a1a;
+            transform: translateY(6px);
+            box-shadow: 0px 0px 0px #050505, 
+                        0px 2px 4px rgba(0,0,0,0.6), 
+                        inset 0 6px 12px rgba(0,0,0,0.9);
+            border-top: 1px solid #000;
+        }
+
+        #btn-tri { color: #10eb71; font-size: 20px; } 
+        #btn-cir { color: #f2355b; font-size: 22px; } 
+        #btn-cross { color: #5976eb; font-size: 20px; } 
+        #btn-sq { color: #df55a3; font-size: 24px; } 
+
+        /* 3D JOYSTICKS */
+        .joystick-base {
+            width: 160px; height: 160px;
+            background-color: #151515;
+            border-radius: 50%; position: relative;
+            border: 2px solid #2a2a2a;
+            box-shadow: inset 0px 8px 25px rgba(0,0,0,0.9), 
+                        0 2px 3px rgba(255,255,255,0.05);
+            transition: opacity 0.3s ease;
+            touch-action: none;
+        }
+        .joystick-stick {
+            width: 60px; height: 60px;
+            background: radial-gradient(circle at 35% 35%, #5a5a5a 0%, #1a1a1a 80%);
+            border-radius: 50%; position: absolute;
+            top: 50px; left: 50px;
+            border: 2px solid #111;
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.8), 
+                        inset 0px 2px 6px rgba(255,255,255,0.25);
+            pointer-events: none; transition: transform 0.05s linear;
+        }
+        .joystick-stick::after {
+            content: ''; position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border-radius: 50%; border: 2px solid #222;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.7), 
+                        0 1px 2px rgba(255,255,255,0.1);
+        }
+
+        /* TERMINAL (RIGHT SIDE - TRACER MODE ONLY) */
+        .terminal-container {
+            display: none; 
+            flex-direction: column;
+            width: 90%;
+            height: 85%;
+            background: #111;
+            border-radius: 12px;
+            border: 2px solid #333;
+            padding: 10px;
+            box-sizing: border-box;
+            box-shadow: inset 0px 0px 10px rgba(0,0,0,0.8);
+        }
+        
+        /* CALIBRATE BUTTON (TRACER UI) */
+        .btn-calibrate {
+            width: 100%;
+            background: linear-gradient(145deg, #9b59b6, #8e44ad);
+            color: white;
+            border: 1px solid #732d91;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0px 4px 0px #512066, 0px 6px 10px rgba(0,0,0,0.4);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            transition: all 0.1s;
+            touch-action: none;
+        }
+        .btn-calibrate:active, .btn-calibrate.active {
+            transform: translateY(4px);
+            box-shadow: 0px 0px 0px #512066, 0px 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            color: #2ecc71;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        .terminal-line { margin: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px;}
+        .terminal-time { color: #888; font-size: 10px; margin-right: 5px; }
+        
+        .btn-clear {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #c0392b;
+            transition: all 0.1s;
+        }
+        .btn-clear:active { transform: translateY(3px); box-shadow: 0 0 0 #c0392b; }
+
+        /* ==========================================
+           TRACER LIGHT THEME OVERRIDES
+           ========================================== */
+        body.tracer-theme {
+            background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #dcdcdc 100%);
+            color: #121212;
+        }
+        body.tracer-theme .center-panel {
+            background-color: #f5f5f5;
+            border-color: #ddd;
+            box-shadow: inset 0px 0px 15px rgba(0,0,0,0.05), 0 10px 30px rgba(0,0,0,0.1);
+        }
+        body.tracer-theme .telemetry-box {
+            background-color: #fff;
+            border-color: #ccc;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.08);
+        }
+        body.tracer-theme .telemetry-label { color: #999; }
+        body.tracer-theme .robot-selector { background: #e0e0e0; border-color: #d0d0d0; }
+        body.tracer-theme .mode-btn { color: #888; }
+        body.tracer-theme .mode-btn.active {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            color: #111; border-color: #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        body.tracer-theme #btn-connect {
+            background: linear-gradient(145deg, #eee, #ddd);
+            color: #333; border-color: #ccc; border-top: 1px solid #fff;
+            box-shadow: 0px 6px 0px #bbb, 0px 8px 15px rgba(0,0,0,0.1);
+        }
+        body.tracer-theme #btn-connect:active {
+            background: linear-gradient(145deg, #ddd, #ccc); 
+            box-shadow: 0px 0px 0px #bbb, 0px 2px 5px rgba(0,0,0,0.1);
+            border-top: 1px solid #ccc;
+        }
+        body.tracer-theme #btn-reconnect { color: #888; border-color: #ccc; }
+        body.tracer-theme #btn-reconnect:active { background: #eee; }
+        
+        body.tracer-theme .main-logo {
+            background: radial-gradient(circle at 35% 35%, #ffffff, #c0c0c0);
+            border-color: #aaa; border-top: 3px solid #fff; border-bottom: 3px solid #999;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 -4px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* TRACER 3D Light D-PAD */
+        body.tracer-theme .btn-dpad {
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-color: #ccc; border-top: 1px solid #fff; color: #555;
+            box-shadow: 0px 6px 0px #a0a0a0, 
+                        0px 10px 15px rgba(0,0,0,0.15), 
+                        inset 0 2px 4px rgba(255,255,255,0.8);
+        }
+        body.tracer-theme .btn-dpad:active, body.tracer-theme .btn-dpad.active {
+            background: #e6e6e6; color: #111;
+            box-shadow: 0px 0px 0px #a0a0a0, 
+                        0px 2px 5px rgba(0,0,0,0.1), 
+                        inset 0 4px 10px rgba(0,0,0,0.15);
+            border-top: 1px solid #ccc;
+        }
+        
+        /* TRACER Light Calibrate Button */
+        body.tracer-theme .btn-calibrate {
+            background: linear-gradient(145deg, #a569bd, #9b59b6);
+            box-shadow: 0px 4px 0px #76448a, 0px 6px 10px rgba(0,0,0,0.15);
+        }
+        body.tracer-theme .btn-calibrate:active, body.tracer-theme .btn-calibrate.active {
+            box-shadow: 0px 0px 0px #76448a, 0px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* TRACER 3D Help Button */
+        body.tracer-theme .btn-help {
+            background: linear-gradient(145deg, #eee, #ddd);
+            color: #555;
+            border-color: #ccc;
+            border-top: 1px solid #fff;
+            box-shadow: 0px 4px 0px #bbb, 0px 4px 10px rgba(0,0,0,0.1);
+        }
+        body.tracer-theme .btn-help:active {
+            background: linear-gradient(145deg, #ddd, #ccc);
+            box-shadow: 0px 0px 0px #bbb, 0px 2px 5px rgba(0,0,0,0.1);
+            border-top: 1px solid #ccc;
+        }
+
+        body.tracer-theme .terminal-container { background: #fff; border-color: #ccc; box-shadow: inset 0px 0px 10px rgba(0,0,0,0.05); }
+        body.tracer-theme .terminal-output { color: #27ae60; }
+        body.tracer-theme .terminal-line { border-bottom: 1px solid #eee; }
+        body.tracer-theme .terminal-time { color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <div id="portrait-warning">
+        <div>🔄</div>
+        <div>Please rotate your phone to Landscape mode</div>
+    </div>
+
+    <div class="app-container">
+        
+        <!-- FLOATING HELP BUTTON -->
+        <div class="btn-help" id="btn-help" title="Command Cheat Sheet">?</div>
+
+        <!-- LEFT SIDE (D-PAD & Left Joystick) -->
+        <div class="side-panel">
+            <div class="button-cluster" id="left-dpad-cluster">
+                <div class="btn btn-dpad btn-top" id="btn-up">▲</div>
+                <div class="btn btn-dpad btn-left" id="btn-left">◀</div>
+                <div class="btn btn-dpad btn-right" id="btn-right">▶</div>
+                <div class="btn btn-dpad btn-bottom" id="btn-down">▼</div>
+            </div>
+            <div class="joystick-base" id="joy-left">
+                <div class="joystick-stick" id="stick-left"></div>
+            </div>
+        </div>
+
+        <!-- CENTER SIDE -->
+        <div class="center-panel">
+            <div class="robot-selector">
+                <div class="mode-btn active" id="mode-blitz">BLITZ</div>
+                <div class="mode-btn" id="mode-tracer">TRACER</div>
+            </div>
+
+            <div class="connect-container">
+                <button id="btn-connect">Connect BLITZ</button>
+                <button id="btn-reconnect">Reconnect Last</button>
+            </div>
+            
+            <img src="icon.png" alt="MAKEROBOT Logo" class="main-logo" id="logo-fullscreen">
+            
+            <div class="telemetry-box">
+                <div class="telemetry-label">Status</div>
+                <div id="status-text">OFFLINE</div>
+                <div class="telemetry-label" style="margin-top: 2px;">Sent Cmd</div>
+                <div id="readout">M_N</div>
+                <div class="telemetry-label" style="margin-top: 2px;" id="rx-label">BLITZ DATA</div>
+                <div id="telemetry-rx">WAITING...<br>&nbsp;</div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE (ACTION BUTTONS, Right Joystick & Terminal) -->
+        <div class="side-panel">
+            
+            <!-- BLITZ UI -->
+            <div class="button-cluster" id="right-action-cluster">
+                <div class="btn btn-action btn-top" id="btn-tri">▲</div>
+                <div class="btn btn-action btn-left" id="btn-sq">■</div>
+                <div class="btn btn-action btn-right" id="btn-cir">●</div>
+                <div class="btn btn-action btn-bottom" id="btn-cross">✖</div>
+            </div>
+            <div class="joystick-base" id="joy-right">
+                <div class="joystick-stick" id="stick-right"></div>
+            </div>
+
+            <!-- TRACER UI (TERMINAL) -->
+            <div class="terminal-container" id="terminal-container">
+                
+                <!-- NEW CALIBRATE BUTTON (Mapped to "cir" command) -->
+                <button class="btn-calibrate" id="btn-tracer-calibrate">CALIBRATE ROBOT</button>
+
+                <div class="terminal-header">
+                    <span>Input History</span>
+                    <button class="btn-clear" id="btn-clear">CLEAR</button>
+                </div>
+                <div class="terminal-output" id="terminal-output">
+                    <!-- Logs go here -->
+                </div>
+            </div>
+
+        </div>
+        
+    </div>
+
+    <script>
+        // ==========================================
+        // HELP BUTTON LOGIC
+        // ==========================================
+        document.getElementById('btn-help').addEventListener('click', () => {
+            window.open('poster.html', '_blank');
+        });
+
+        // ==========================================
+        // ROBOT MODE SELECTOR LOGIC & THEME ENGINE
+        // ==========================================
+        const modeBlitz = document.getElementById('mode-blitz');
+        const modeTracer = document.getElementById('mode-tracer');
+        
+        const joyLeft = document.getElementById('joy-left');
+        const joyRight = document.getElementById('joy-right');
+        const leftDpadCluster = document.getElementById('left-dpad-cluster');
+        const rightActionCluster = document.getElementById('right-action-cluster');
+        const terminalContainer = document.getElementById('terminal-container');
+        
+        const connectBtn = document.getElementById('btn-connect');
+        const reconnectBtn = document.getElementById('btn-reconnect');
+        const rxLabel = document.getElementById('rx-label');
+        const metaThemeColor = document.getElementById('meta-theme-color');
+        
+        let currentRobot = 'BLITZ';
+        let knownDevice = null; 
+
+        function setRobotMode(mode) {
+            currentRobot = mode;
+            if (mode === 'BLITZ') {
+                modeBlitz.classList.add('active');
+                modeTracer.classList.remove('active');
+                document.body.classList.remove('tracer-theme');
+                metaThemeColor.setAttribute('content', '#121212');
+                
+                leftDpadCluster.classList.remove('large-dpad');
+
+                joyLeft.style.display = 'block';
+                joyRight.style.display = 'block';
+                rightActionCluster.style.display = 'grid';
+                terminalContainer.style.display = 'none'; 
+                
+                rxLabel.innerText = 'BLITZ DATA';
+                if(document.getElementById('status-text').innerText !== "CONNECTED") {
+                    connectBtn.innerText = 'Connect BLITZ';
+                }
+            } else {
+                modeTracer.classList.add('active');
+                modeBlitz.classList.remove('active');
+                document.body.classList.add('tracer-theme'); 
+                metaThemeColor.setAttribute('content', '#ffffff');
+                
+                leftDpadCluster.classList.add('large-dpad');
+
+                joyLeft.style.display = 'none';
+                joyRight.style.display = 'none';
+                rightActionCluster.style.display = 'none';
+                terminalContainer.style.display = 'flex'; 
+                
+                rxLabel.innerText = 'TRACER DATA';
+                if(document.getElementById('status-text').innerText !== "CONNECTED") {
+                    connectBtn.innerText = 'Connect TRACER';
+                }
+            }
+
+            if (knownDevice) {
+                reconnectBtn.innerText = `Reconnect to my ${currentRobot}`;
+            }
+        }
+
+        modeBlitz.addEventListener('click', () => setRobotMode('BLITZ'));
+        modeTracer.addEventListener('click', () => setRobotMode('TRACER'));
+
+        // ==========================================
+        // TERMINAL LOGIC
+        // ==========================================
+        const terminalOutput = document.getElementById('terminal-output');
+        const btnClear = document.getElementById('btn-clear');
+
+        function logToTerminal(msg) {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                            now.getMinutes().toString().padStart(2, '0') + ':' + 
+                            now.getSeconds().toString().padStart(2, '0');
+                            
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-time">[${timeStr}]</span> > ${msg}`;
+            
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        btnClear.addEventListener('click', () => {
+            terminalOutput.innerHTML = '';
+        });
+
+        // ==========================================
+        // FULLSCREEN TOGGLE VIA LOGO
+        // ==========================================
+        const logoFullscreen = document.getElementById('logo-fullscreen');
+        logoFullscreen.addEventListener('click', () => {
+            let docElm = document.documentElement;
+            let isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+
+            if (!isFullscreen) {
+                if (docElm.requestFullscreen) { docElm.requestFullscreen(); } 
+                else if (docElm.mozRequestFullScreen) { docElm.mozRequestFullScreen(); } 
+                else if (docElm.webkitRequestFullScreen) { docElm.webkitRequestFullScreen(); } 
+                else if (docElm.msRequestFullscreen) { docElm.msRequestFullscreen(); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); } 
+                else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); } 
+                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
+                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            }
+        });
+
+        // ==========================================
+        // WEB BLUETOOTH API (BIDIRECTIONAL & AUTO-RECONNECT)
+        // ==========================================
+        let bleDevice;
+        let bleServer;
+        let uartService;
+        let rxCharacteristic; 
+        let txCharacteristic; 
+
+        const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+        const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+        const readout = document.getElementById('readout');
+        const statusText = document.getElementById('status-text');
+        
+        const telemetryRx = document.getElementById('telemetry-rx');
+        let telemetryData = {}; 
+        let telemetryOrder = []; 
+
+        window.addEventListener('load', async () => {
+            if (navigator.bluetooth && navigator.bluetooth.getDevices) {
+                try {
+                    const devices = await navigator.bluetooth.getDevices();
+                    if (devices.length > 0) {
+                        knownDevice = devices[0];
+                        reconnectBtn.style.display = 'block';
+                        reconnectBtn.innerText = `Reconnect to my ${currentRobot}`;
+                    }
+                } catch (err) {
+                    console.log("Device auto-discovery not supported", err);
+                }
+            }
+        });
+
+        function renderTelemetry() {
+            if (telemetryOrder.length === 0) {
+                telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
+            } else if (telemetryOrder.length === 1) {
+                telemetryRx.innerHTML = telemetryData[telemetryOrder[0]] + "<br>&nbsp;";
+            } else {
+                telemetryRx.innerHTML = telemetryData[telemetryOrder[0]] + "<br>" + telemetryData[telemetryOrder[1]];
+            }
+        }
+
+        async function connectToDevice(device) {
+            bleDevice = device;
+            bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+            statusText.innerText = "CONNECTING...";
+            statusText.style.color = "#f39c12";
+
+            bleServer = await bleDevice.gatt.connect();
+            uartService = await bleServer.getPrimaryService(UART_SERVICE_UUID);
+            
+            rxCharacteristic = await uartService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
+            txCharacteristic = await uartService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
+            await txCharacteristic.startNotifications();
+            txCharacteristic.addEventListener('characteristicvaluechanged', handleIncomingTelemetry);
+
+            statusText.innerText = "CONNECTED";
+            statusText.style.color = "#2ecc71"; 
+            telemetryRx.innerHTML = "READY<br>&nbsp;";
+            
+            connectBtn.innerText = "DISCONNECT";
+            connectBtn.style.background = "linear-gradient(145deg, #27ae60, #1e8449)";
+            connectBtn.style.borderColor = "#1e8449";
+            connectBtn.style.boxShadow = "0px 6px 0px #145a32, 0px 8px 15px rgba(0,0,0,0.5)";
+            reconnectBtn.style.display = 'none'; 
+            
+            knownDevice = bleDevice; 
+        }
+
+        connectBtn.addEventListener('click', async () => {
+            if (rxCharacteristic && bleDevice && bleDevice.gatt.connected) {
+                bleDevice.gatt.disconnect();
+                return;
+            }
+
+            try {
+                statusText.innerText = "SCANNING...";
+                statusText.style.color = "#f39c12"; 
+                
+                let device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'BBC micro:bit' }],
+                    optionalServices: [UART_SERVICE_UUID]
+                });
+
+                await connectToDevice(device);
+            } catch (error) {
+                console.error('Bluetooth Error:', error);
+                statusText.innerText = "FAILED";
+                statusText.style.color = "#e74c3c";
+                if (knownDevice) reconnectBtn.style.display = 'block';
+            }
+        });
+
+        reconnectBtn.addEventListener('click', async () => {
+            if (!knownDevice) return;
+            try {
+                reconnectBtn.style.display = 'none'; 
+                await connectToDevice(knownDevice);
+            } catch (error) {
+                console.error('Reconnect Error:', error);
+                statusText.innerText = "FAILED";
+                statusText.style.color = "#e74c3c";
+                reconnectBtn.style.display = 'block'; 
+            }
+        });
+
+        function handleIncomingTelemetry(event) {
+            let value = event.target.value;
+            let decoder = new TextDecoder('utf-8');
+            let receivedString = decoder.decode(value).trim();
+            receivedString = receivedString.replace("#", "");
+            
+            let label = receivedString;
+            let match = receivedString.match(/^([^:=]+)[:=]/);
+            if (match) {
+                label = match[1].trim();
+            } else {
+                label = receivedString.split(' ')[0].trim(); 
+            }
+            
+            if (!telemetryOrder.includes(label)) {
+                telemetryOrder.push(label);
+                if (telemetryOrder.length > 2) {
+                    let oldLabel = telemetryOrder.shift();
+                    delete telemetryData[oldLabel];
+                }
+            }
+            
+            telemetryData[label] = receivedString;
+            renderTelemetry();
+        }
+
+        function onDisconnected() {
+            statusText.innerText = "OFFLINE";
+            statusText.style.color = "#e74c3c"; 
+            
+            telemetryRx.innerHTML = "WAITING...<br>&nbsp;";
+            telemetryData = {};
+            telemetryOrder = [];
+            
+            connectBtn.innerText = `Connect ${currentRobot}`;
+            
+            if(currentRobot === 'TRACER') {
+                connectBtn.style.background = "linear-gradient(145deg, #eee, #ddd)";
+                connectBtn.style.borderColor = "#ccc";
+                connectBtn.style.boxShadow = "0px 6px 0px #bbb, 0px 8px 15px rgba(0,0,0,0.1)";
+            } else {
+                connectBtn.style.background = "linear-gradient(145deg, #333, #222)";
+                connectBtn.style.borderColor = "#444";
+                connectBtn.style.boxShadow = "0px 6px 0px #111, 0px 8px 15px rgba(0,0,0,0.5)";
+            }
+            
+            rxCharacteristic = null;
+            txCharacteristic = null;
+
+            if (knownDevice) {
+                reconnectBtn.style.display = 'block';
+                reconnectBtn.innerText = `Reconnect to my ${currentRobot}`;
+            }
+        }
+
+        async function sendCommand(cmd) {
+            readout.innerText = cmd;
+
+            if (!rxCharacteristic) return; 
+
+            try {
+                let encoder = new TextEncoder();
+                let data = encoder.encode(cmd + "#");
+                
+                if (rxCharacteristic.properties.writeWithoutResponse) {
+                    await rxCharacteristic.writeValueWithoutResponse(data);
+                } else {
+                    await rxCharacteristic.writeValue(data);
+                }
+            } catch (error) {
+                console.error('Send Error:', error);
+            }
+        }
+
+        // ==========================================
+        // CONTROLLER LOGIC & MAPPING
+        // ==========================================
+        const btnCodes = {
+            'btn-up': 'up', 'btn-down': 'down', 'btn-left': 'left', 'btn-right': 'right',
+            'btn-tri': 'tri', 'btn-cross': 'cross', 'btn-sq': 'sq', 'btn-cir': 'cir',
+            'btn-tracer-calibrate': 'cir'
+        };
+
+        const keyMap = {
+            'ArrowUp': 'btn-up', 'w': 'btn-up', 'W': 'btn-up',
+            'ArrowDown': 'btn-down', 's': 'btn-down', 'S': 'btn-down',
+            'ArrowLeft': 'btn-left', 'a': 'btn-left', 'A': 'btn-left',
+            'ArrowRight': 'btn-right', 'd': 'btn-right', 'D': 'btn-right',
+            'c': 'btn-tracer-calibrate', 'C': 'btn-tracer-calibrate'
+        };
+
+        let tracerDelayLock = false;
+
+        function handleButtonPress(btn) {
+            if (currentRobot === 'TRACER' && tracerDelayLock) return; 
+            if (btn.classList.contains('active')) return; 
+            
+            btn.classList.add('active');
+            let baseCmd = btnCodes[btn.id];
+            sendCommand(baseCmd + "1");
+
+            if (currentRobot === 'TRACER' && ['btn-up', 'btn-down', 'btn-left', 'btn-right', 'btn-tracer-calibrate'].includes(btn.id)) {
+                let logName = btn.id === 'btn-tracer-calibrate' ? 'CALIBRATE' : baseCmd.toUpperCase();
+                logToTerminal(`PRESSED: ${logName}`);
+                
+                tracerDelayLock = true;
+                setTimeout(() => {
+                    tracerDelayLock = false;
+                }, 500); 
+            }
+        }
+
+        function handleButtonRelease(btn) {
+            if (btn.classList.contains('active')) {
+                btn.classList.remove('active');
+                sendCommand(btnCodes[btn.id] + "0");
+            }
+        }
+
+        const buttons = document.querySelectorAll('.btn, .btn-calibrate');
+        buttons.forEach(btn => {
+            btn.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                try { btn.setPointerCapture(e.pointerId); } catch(err) {}
+                handleButtonPress(btn);
+            });
+            btn.addEventListener('pointerup', (e) => {
+                e.preventDefault();
+                handleButtonRelease(btn);
+                try { btn.releasePointerCapture(e.pointerId); } catch(err) {}
+            });
+            btn.addEventListener('pointercancel', (e) => {
+                e.preventDefault();
+                handleButtonRelease(btn);
+            });
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (keyMap[e.key]) {
+                e.preventDefault(); 
+                if (!e.repeat) { 
+                    const targetBtn = document.getElementById(keyMap[e.key]);
+                    if (targetBtn) handleButtonPress(targetBtn);
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (keyMap[e.key]) {
+                e.preventDefault();
+                const targetBtn = document.getElementById(keyMap[e.key]);
+                if (targetBtn) handleButtonRelease(targetBtn);
+            }
+        });
+
+        // ==========================================
+        // JOYSTICK LOGIC
+        // ==========================================
+        let leftDir = "N";
+        let rightDir = "N";
+        let currentMoveCmd = "M_N"; 
+
+        function updateMovement() {
+            let newMoveCmd = "M_N"; 
+
+            if (leftDir === "U" && rightDir === "N") newMoveCmd = "M_U";
+            else if (leftDir === "D" && rightDir === "N") newMoveCmd = "M_D";
+            else if (leftDir === "N" && rightDir === "L") newMoveCmd = "M_L";
+            else if (leftDir === "N" && rightDir === "R") newMoveCmd = "M_R";
+            else if (leftDir === "U" && rightDir === "L") newMoveCmd = "M_UL";
+            else if (leftDir === "U" && rightDir === "R") newMoveCmd = "M_UR";
+            else if (leftDir === "D" && rightDir === "L") newMoveCmd = "M_DL";
+            else if (leftDir === "D" && rightDir === "R") newMoveCmd = "M_DR";
+
+            if (newMoveCmd !== currentMoveCmd) {
+                currentMoveCmd = newMoveCmd;
+                sendCommand(currentMoveCmd);
+            }
+        }
+
+        function setupJoystick(baseId, stickId, side) {
+            const base = document.getElementById(baseId);
+            const stick = document.getElementById(stickId);
+            
+            const maxRadius = 50; 
+            const deadzone = 15;  
+
+            let activePointerId = null;
+
+            function resetStick() {
+                stick.style.transform = `translate(0px, 0px)`;
+                activePointerId = null;
+                
+                if (side === 'L') leftDir = "N";
+                if (side === 'R') rightDir = "N";
+                updateMovement();
+            }
+
+            function handlePointer(e) {
+                e.preventDefault();
+                
+                if (e.type === 'pointerdown' && activePointerId === null) {
+                    activePointerId = e.pointerId;
+                    try { base.setPointerCapture(e.pointerId); } catch(err) {}
+                }
+                
+                if (e.pointerId !== activePointerId) return;
+
+                if (e.type === 'pointerup' || e.type === 'pointercancel') {
+                    resetStick();
+                    try { base.releasePointerCapture(e.pointerId); } catch(err) {}
+                    return;
+                }
+
+                const rect = base.getBoundingClientRect();
+                const centerX = rect.left + (rect.width / 2);
+                const centerY = rect.top + (rect.height / 2);
+                
+                let deltaX = e.clientX - centerX;
+                let deltaY = e.clientY - centerY;
+
+                let distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+                let angleRad = Math.atan2(deltaY, deltaX);
+                let angleDeg = angleRad * (180 / Math.PI);
+
+                if (distance > maxRadius) {
+                    deltaX = Math.cos(angleRad) * maxRadius;
+                    deltaY = Math.sin(angleRad) * maxRadius;
+                }
+
+                stick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+                let newDir = "N";
+                if (distance > deadzone) {
+                    if (angleDeg > -22.5 && angleDeg <= 22.5) newDir = "R";
+                    else if (angleDeg > 22.5 && angleDeg <= 67.5) newDir = "DR";
+                    else if (angleDeg > 67.5 && angleDeg <= 112.5) newDir = "D";
+                    else if (angleDeg > 112.5 && angleDeg <= 157.5) newDir = "DL";
+                    else if (angleDeg > 157.5 || angleDeg <= -157.5) newDir = "L";
+                    else if (angleDeg > -157.5 && angleDeg <= -112.5) newDir = "UL";
+                    else if (angleDeg > -112.5 && angleDeg <= -67.5) newDir = "U";
+                    else if (angleDeg > -67.5 && angleDeg <= -22.5) newDir = "UR";
+                }
+
+                if (side === 'L' && leftDir !== newDir) {
+                    leftDir = newDir;
+                    updateMovement();
+                } else if (side === 'R' && rightDir !== newDir) {
+                    rightDir = newDir;
+                    updateMovement();
+                }
+            }
+
+            base.addEventListener('pointerdown', handlePointer);
+            base.addEventListener('pointermove', handlePointer);
+            base.addEventListener('pointerup', handlePointer);
+            base.addEventListener('pointercancel', handlePointer);
+        }
+
+        setupJoystick('joy-left', 'stick-left', 'L');
+        setupJoystick('joy-right', 'stick-right', 'R');
+
+    </script>
+</body>
+</html>
