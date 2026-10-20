@@ -604,7 +604,7 @@
                 <div class="joystick-stick" id="stick-right"></div>
             </div>
 
-            <!-- TRACER UI (TERMINAL) -->
+            <!-- TRACER UI (TERMINAL & CALIBRATE) -->
             <div class="terminal-container" id="terminal-container">
                 
                 <!-- NEW CALIBRATE BUTTON (Mapped to "cir" command) -->
@@ -763,6 +763,14 @@
         let telemetryOrder = []; 
 
         window.addEventListener('load', async () => {
+            // Check URL for ?mode=tracer or #tracer to auto-load UI
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlMode = urlParams.get('mode') || window.location.hash.replace('#', '');
+            
+            if (urlMode && urlMode.toUpperCase() === 'TRACER') {
+                setRobotMode('TRACER');
+            }
+
             if (navigator.bluetooth && navigator.bluetooth.getDevices) {
                 try {
                     const devices = await navigator.bluetooth.getDevices();
@@ -932,7 +940,7 @@
         const btnCodes = {
             'btn-up': 'up', 'btn-down': 'down', 'btn-left': 'left', 'btn-right': 'right',
             'btn-tri': 'tri', 'btn-cross': 'cross', 'btn-sq': 'sq', 'btn-cir': 'cir',
-            'btn-tracer-calibrate': 'cir'
+            'btn-tracer-calibrate': 'cir' // Maps the TRACER Calibrate button to 'cir'
         };
 
         const keyMap = {
@@ -940,7 +948,7 @@
             'ArrowDown': 'btn-down', 's': 'btn-down', 'S': 'btn-down',
             'ArrowLeft': 'btn-left', 'a': 'btn-left', 'A': 'btn-left',
             'ArrowRight': 'btn-right', 'd': 'btn-right', 'D': 'btn-right',
-            'c': 'btn-tracer-calibrate', 'C': 'btn-tracer-calibrate'
+            'c': 'btn-tracer-calibrate', 'C': 'btn-tracer-calibrate' // 'C' key support
         };
 
         let tracerDelayLock = false;
@@ -953,6 +961,7 @@
             let baseCmd = btnCodes[btn.id];
             sendCommand(baseCmd + "1");
 
+            // Logging Tracer specific commands
             if (currentRobot === 'TRACER' && ['btn-up', 'btn-down', 'btn-left', 'btn-right', 'btn-tracer-calibrate'].includes(btn.id)) {
                 let logName = btn.id === 'btn-tracer-calibrate' ? 'CALIBRATE' : baseCmd.toUpperCase();
                 logToTerminal(`PRESSED: ${logName}`);
@@ -971,6 +980,7 @@
             }
         }
 
+        // Apply events to both normal buttons and the calibrate button
         const buttons = document.querySelectorAll('.btn, .btn-calibrate');
         buttons.forEach(btn => {
             btn.addEventListener('pointerdown', (e) => {
